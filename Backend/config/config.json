@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "muratcan.yusufoglu",
+    "password": null,
+    "database": "story_db",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "muratcan.yusufoglu",
+    "password": null,
+    "database": "story_db",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "muratcan.yusufoglu",
+    "password": null,
+    "database": "story_db",
+    "host": "localhost",
+    "dialect": "postgres"
+  }
+}
