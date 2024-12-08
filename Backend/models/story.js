@@ -56,6 +56,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true
     },
+    totalPartCount: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     contentText: {
       type: DataTypes.STRING,
       allowNull: true
@@ -90,6 +94,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: false
+    },
+    storyImage: {
+      type: DataTypes.STRING,
+      allowNull: true,      
     },
     createdAt: {
       type: DataTypes.DATE,
