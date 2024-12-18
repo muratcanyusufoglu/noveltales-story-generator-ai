@@ -121,7 +121,11 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+# Ignore specific environment files
+.env
+.env.local
+.env.production
+.env.development
 
 # typescript
 *.tsbuildinfo
