@@ -34,6 +34,13 @@ const tr: Translations = {
     pleaseGiveUsername: "Kullanıcı adınızı giriniz",
     enterYourUsername: "Kullanıcı adınızı girin",
     letsStart: "Başlayalım",
+    welcomeBack: "Tekrar hoş geldiniz!",
+    enterUsername: "Devam etmek için lütfen kullanıcı adınızı girin.",
+    usernameLabel: "Kullanıcı adı",
+    usernamePlaceholder: "Kullanıcı adınızı girin",
+    emailLabel: "E-posta",
+    emailPlaceholder: "E-postanızı girin",
+    logIn: "Giriş Yap",
   },
   common: {
     ok: "Tamam",

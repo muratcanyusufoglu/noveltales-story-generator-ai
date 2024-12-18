@@ -34,6 +34,13 @@ const fr: Translations = {
     pleaseGiveUsername: "Veuillez donner un nom d'utilisateur",
     enterYourUsername: "Entrez votre nom d'utilisateur",
     letsStart: "Commençons",
+    welcomeBack: "Bon retour!",
+    enterUsername: "Veuillez entrer votre nom d'utilisateur pour continuer.",
+    usernameLabel: "Nom d'utilisateur",
+    usernamePlaceholder: "Entrez votre nom d'utilisateur",
+    emailLabel: "E-mail",
+    emailPlaceholder: "Entrez votre e-mail",
+    logIn: "Connexion",
   },
   common: {
     ok: "OK !",

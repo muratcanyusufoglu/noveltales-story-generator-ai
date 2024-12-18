@@ -1,48 +1,68 @@
 {
-  "name": "ZustandApp",
-  "displayName": "ZustandApp",
+  "name": "NovelTales AI: Story Generator",
+  "displayName": "NovelTales",
   "expo": {
-    "name": "ZustandApp",
-    "slug": "ZustandApp",
-    "scheme": "zustandapp",
+    "extra": {
+      "eas": {
+        "projectId": "4c6384aa-3423-4a95-b1cb-e1816ebb426f"
+      }
+    },
+    "name": "NovelTales AI: Story Generator",
+    "slug": "story-app",
+    "scheme": "noveltalesai.storygenerator",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/noveltalesSplash.png",
+    "icon": "./assets/images/novelTalesIcon.png",
     "splash": {
       "image": "./assets/images/noveltalesSplash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#191015"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "enabled": true
     },
     "jsEngine": "hermes",
     "assetBundlePatterns": [
       "**/*"
     ],
     "android": {
-      "icon": "./assets/images/noveltalesSplash.png",
+      "icon": "./assets/images/novelTalesIcon.png",
       "package": "com.zustandapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
         "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
       },
       "splash": {
-        "image": "./assets/images/noveltalesSplash.png",
+        "image": "./assets/images/splash-logo-android-universal.png",
         "resizeMode": "contain",
         "backgroundColor": "#191015"
       }
     },
     "ios": {
-      "icon": "./assets/images/noveltalesSplash.png",
+      "icon": "./assets/images/novelTalesIcon.png",
       "supportsTablet": true,
-      "bundleIdentifier": "com.zustandapp",
+      "bundleIdentifier": "com.noveltalesai.storygenerator",
+      "infoPlist": {
+        "SKAdNetworkItems": [
+          {
+            "SKAdNetworkIdentifier": "example"
+          }
+        ],
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSAllowsArbitraryLoadsInWebContent": true,
+          "NSAllowsLocalNetworking": true
+        }
+      },
       "splash": {
         "image": "./assets/images/noveltalesSplash.png",
-        "tabletImage": "./assets/images/splash-logo-ios-tablet.png",
-        "resizeMode": "contain",
+        "tabletImage": "./assets/images/noveltalesSplash.png",
+        "resizeMode": "contain" ,
         "backgroundColor": "#191015"
-      }
+      },
+      "deploymentTarget": "14.0",
+      "buildConfiguration": "Debug"
     },
     "web": {
       "favicon": "./assets/images/app-icon-web-favicon.png",

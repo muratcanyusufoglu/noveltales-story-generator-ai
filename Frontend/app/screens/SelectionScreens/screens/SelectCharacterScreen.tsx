@@ -31,6 +31,15 @@ export const CharacterSelectionScreen: FC<DemoTabScreenProps<"CharacterSelection
     character.name.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
+  const toggleCharacterSelection = (character) => {
+    console.log(character, characters)
+    if (characters.includes(character)) {
+      setStoryCharacters(characters.filter((c) => c !== character))
+    } else {
+      setStoryCharacters([...characters, character])
+    }
+  }
+
   return (
     <SafeAreaView style={$container}>
       <HeaderComponent
@@ -44,7 +53,7 @@ export const CharacterSelectionScreen: FC<DemoTabScreenProps<"CharacterSelection
       <CharacterListComponent
         characters={filteredCharacters}
         selectedCharacters={characters}
-        onCharacterSelect={(character) => setStoryCharacters(character)}
+        onCharacterSelect={toggleCharacterSelection}
       />
       <FooterComponent
         onBack={() => navigation.goBack()}

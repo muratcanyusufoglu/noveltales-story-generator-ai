@@ -23,6 +23,13 @@ const en = {
     pleaseGiveUsername: "Please give a username",
     enterYourUsername: "Enter your username",
     letsStart: "Let's Start",
+    welcomeBack: "Welcome Back!",
+    enterUsername: "Please enter your username and email to continue.",
+    usernameLabel: "Username",
+    usernamePlaceholder: "Enter your username",
+    emailLabel: "Email",
+    emailPlaceholder: "Enter your email",
+    logIn: "Log In",
   },
   storyDetailScreen: {
     letStoryContinue: "Let's Story Continue",

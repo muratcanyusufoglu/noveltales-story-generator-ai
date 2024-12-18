@@ -78,7 +78,6 @@ const AppStack = () => {
             <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
           </>
         )}
-        const {authEmail} = useAuthenticationStore()
         {/** 🔥 Your screens go here */}
         {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
       </Stack.Navigator>

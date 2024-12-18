@@ -6,10 +6,12 @@ export interface AuthenticationStore {
   authEmail: string
   isSubscribed: boolean
   creditBalance: number
+  username: string
   setIsSubscribed: (value: boolean) => void
   setAuthToken: (value?: number) => void
   setAuthEmail: (value: string) => void
   setCreditBalance: (value: number) => void
+  setUsername: (value: string) => void
   logout: () => void
   isSubscribedOrExistCreditBalance: () => boolean
 }
@@ -22,10 +24,12 @@ export const createAuthenticationSlice: StateCreator<RootStore, [], [], Authenti
   authEmail: "",
   isSubscribed: false,
   creditBalance: 5,
+  username: "",
   setIsSubscribed: (value) => set({ isSubscribed: value }),
   setCreditBalance: (value) => set({ creditBalance: value }),
   setAuthToken: (value) => set({ authToken: value }),
   setAuthEmail: (value) => set({ authEmail: value.replace(/ /g, "") }),
+  setUsername: (value) => set({ username: value }),
   logout: () => set({ authToken: undefined, authEmail: "", isSubscribed: false }),
   isSubscribedOrExistCreditBalance: () => {
     const { isSubscribed, creditBalance } = get()
@@ -40,11 +44,13 @@ export const authenticationStoreSelector = (state: RootStore) => ({
   authEmail: state.authEmail,
   isSubscribed: state.isSubscribed,
   creditBalance: state.creditBalance,
+  username: state.username,
   isAuthenticated: isAuthenticatedSelector(state),
   setAuthToken: state.setAuthToken,
   setAuthEmail: state.setAuthEmail,
   setIsSubscribed: state.setIsSubscribed,
   setCreditBalance: state.setCreditBalance,
+  setUsername: state.setUsername,
   logout: state.logout,
   isSubscribedOrExistCreditBalance: state.isSubscribedOrExistCreditBalance,
 })

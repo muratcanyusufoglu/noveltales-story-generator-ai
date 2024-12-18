@@ -192,7 +192,6 @@ const $tabBar: ViewStyle = {
   borderTopWidth: 1,
   borderTopColor: colors.palette.neutral200,
   height: height * 0.11,
-  paddingBottom: 30,
 }
 
 const $tabBarItem: ViewStyle = {

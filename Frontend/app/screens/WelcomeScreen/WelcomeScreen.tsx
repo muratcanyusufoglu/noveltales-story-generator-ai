@@ -4,40 +4,61 @@ import { Button, Text, TextField } from "../../components"
 import { colors, spacing } from "../../theme"
 import { useAuthenticationStore } from "app/store"
 import { DemoTabScreenProps } from "app/navigators/DemoNavigator"
+import { translate } from "../../i18n"
+import UserService from "./LoginService"
 
 interface WelcomeScreenProps extends DemoTabScreenProps<"WelcomeScreen"> {}
 
 export const WelcomeScreen: FC<WelcomeScreenProps> = (_props) => {
-  const [username, setUsername] = useState("")
+  const [mail, setMail] = useState("")
+  const [uName, setUName] = useState("")
 
-  const { setAuthToken, setAuthEmail } = useAuthenticationStore()
+  const { setAuthToken, setAuthEmail, setUsername, authEmail, username } = useAuthenticationStore()
 
-  function login() {
-    // Implement your login logic here
-    console.log("adsadsads")
-    setAuthToken(Number(Date.now()))
-    setAuthEmail(username)
-    _props.navigation.navigate("Demo" as never)
+  async function login() {
+    try {
+      const userService = new UserService()
+      const role = "user"
+      const premium = false
+
+      const user = await userService.registerUser(uName, mail, role, premium)
+
+      setAuthToken(Number(Date.now()))
+      setUsername(user.username)
+      setAuthEmail(user.email)
+
+      _props.navigation.navigate("Demo" as never)
+    } catch (error) {
+      console.error("Login failed", error)
+    }
   }
 
   return (
     <SafeAreaView style={$container}>
-      <Text style={$welcomeText}>Welcome Back!</Text>
-      <Text style={$instructionText}>Please enter your username to continue.</Text>
+      <Text style={$welcomeText}>{translate("welcomeScreen.welcomeBack")}</Text>
+      <Text style={$instructionText}>{translate("welcomeScreen.enterUsername")}</Text>
 
       <View style={$inputContainer}>
         <TextField
-          label="Username"
-          placeholder="Enter your username"
-          value={username}
-          onChangeText={setUsername}
+          label={translate("welcomeScreen.usernameLabel")}
+          placeholder={translate("welcomeScreen.usernamePlaceholder")}
+          value={uName}
+          onChangeText={setUName}
+          containerStyle={$textField}
+          placeholderTextColor={colors.palette.neutral500}
+        />
+        <TextField
+          label={translate("welcomeScreen.emailLabel")}
+          placeholder={translate("welcomeScreen.emailPlaceholder")}
+          value={mail}
+          onChangeText={setMail}
           containerStyle={$textField}
           placeholderTextColor={colors.palette.neutral500}
         />
       </View>
 
       <Button
-        text="Log In"
+        text={translate("welcomeScreen.logIn")}
         style={$loginButton}
         textStyle={$loginButtonText}
         onPress={() => login()}
@@ -58,6 +79,7 @@ const $welcomeText: TextStyle = {
   fontSize: 28,
   fontWeight: "bold",
   marginVertical: spacing.md,
+  paddingTop: spacing.md,
 }
 
 const $instructionText: TextStyle = {

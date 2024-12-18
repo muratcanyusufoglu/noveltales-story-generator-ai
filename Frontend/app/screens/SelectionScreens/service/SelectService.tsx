@@ -11,7 +11,10 @@ class SelectService {
     const response = await axios({
       method: "get",
       url: this.characterUrl,
+    }).catch((error) => {
+      console.log("error", error)
     })
+    console.log("responseeeee", response.data, ":: ", this.characterUrl)
     return response.data
   }
 

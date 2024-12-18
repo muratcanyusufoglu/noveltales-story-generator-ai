@@ -27,7 +27,7 @@ export const CharacterListComponent: FC<CharacterListComponentProps> = ({
             : $characterUnselected,
           isLastRow && $lastRowMargin,
         ]}
-        onPress={() => onCharacterSelect(item)}
+        onPress={() => onCharacterSelect(item.name)}
       >
         <View style={$characterRow}>
           {selectedCharacters.map((character) => character.id).includes(item.id) && (
