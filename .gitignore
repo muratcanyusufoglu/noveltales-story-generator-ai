@@ -1,5 +1,14 @@
+<<<<<<< HEAD
 *.env
 
 /Backend/.env
 /Frontend/.env
 .env
+=======
+.
+# Ignore specific environment files
+.env
+.env.local
+.env.production
+.env.development
+>>>>>>> origin/test

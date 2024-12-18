@@ -1,11 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const { User, Follows } = require('../models');  // Assuming User and Follows models are already defined
+const { Op } = require('sequelize');
 
 // Register a new user
 router.post('/register', async (req, res) => {
   try {
     const { username, email, role, premium } = req.body;
+
+    // Check if the username or email already exists
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ username }, { email }]
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'Username or email already exists' });
+    }
+
+    // Create a new user if no existing user is found
     const user = await User.create({ username, email, role, premium });
     res.status(201).json(user);
   } catch (error) {
