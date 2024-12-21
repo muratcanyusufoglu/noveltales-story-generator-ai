@@ -1,14 +1,24 @@
-import React, { FC, useEffect, useLayoutEffect, useRef, useState } from "react"
-import { View, FlatList, Image, Alert, Dimensions } from "react-native"
+import React, { FC, useEffect, useState } from "react"
+import { View, FlatList, Dimensions } from "react-native"
 import { Text, Button } from "../../../components"
 import { useIsFocused } from "@react-navigation/native"
 import { TouchableOpacity } from "react-native-gesture-handler"
-import { ViewStyle, TextStyle, ImageStyle } from "react-native"
+import { ViewStyle, TextStyle } from "react-native"
 import HomeService from "../Service/HomeService"
 import { useAuthenticationStore } from "app/store"
 import Animated from "react-native-reanimated"
 import { colors, spacing } from "app/theme"
 import { DemoTabScreenProps } from "app/navigators/DemoNavigator"
+import FastImage from "react-native-fast-image"
+
+// Pre-configure FastImage for all images
+FastImage.preload([
+  {
+    uri: "your-static-image-url-1",
+    priority: FastImage.priority.high,
+  },
+  // Add more static images here
+])
 
 // Inspiration of the Day Component
 const InspirationOfTheDay: FC<{ todayTopic: any; handleInspiration: () => void }> = ({
@@ -17,7 +27,7 @@ const InspirationOfTheDay: FC<{ todayTopic: any; handleInspiration: () => void }
 }) => {
   return (
     <View style={todayTopicCard}>
-      <Image source={{ uri: todayTopic.imageUrl }} style={todayTopicImage} />
+      <FastImage source={{ uri: todayTopic.imageUrl }} style={todayTopicImage} />
       <View style={todayTopicContent}>
         <Text style={todayTopicTitle}>{todayTopic.topicName}</Text>
         <Text style={todayTopicDescription}>{todayTopic.description}</Text>
@@ -42,6 +52,7 @@ const MyStoriesList: FC<{ stories: any[]; navigation: any }> = ({ stories, navig
       <Animated.Image
         source={{
           uri: item.storyImage,
+          cache: "force-cache",
         }}
         style={cardImage}
         sharedTransitionTag={item.id.toString()}
@@ -75,23 +86,24 @@ const TopicCard: FC<{ topic: any; navigation: any }> = ({ topic, navigation }) =
     navigation.navigate("CreateStory", { topic: item })
   }
 
-  const renderTopic = ({ item }) => {
-    return (
-      <TouchableOpacity style={topicCard} onPress={() => handlePress(item)}>
-        <Image
-          source={{
-            uri: item.images[0],
-          }}
-          style={topicCardImage}
-        />
-        <View style={topicCardContent}>
-          <Text style={topicTitle} numberOfLines={1} size="xxs">
-            {item.title}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    )
-  }
+  const renderTopic = ({ item }) => (
+    <TouchableOpacity style={topicCard} onPress={() => handlePress(item)}>
+      <FastImage
+        source={{
+          uri: item.images[0],
+          priority: FastImage.priority.normal,
+          cache: FastImage.cacheControl.immutable,
+        }}
+        style={topicCardImage}
+        resizeMode={FastImage.resizeMode.cover}
+      />
+      <View style={topicCardContent}>
+        <Text style={topicTitle} numberOfLines={1} size="xxs">
+          {item.title}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  )
   return (
     <FlatList
       data={topic}
@@ -117,25 +129,30 @@ export const HomeScreen: FC<HomeScreenProps> = (_props) => {
   const isFocused = useIsFocused()
 
   useEffect(() => {
-    const fetchStories = async () => {
-      const stories = await homeService.getStories({ id: authToken ?? 0 })
-      const topics = await homeService.getTopics()
+    const fetchData = async () => {
+      const [fetchedStories, fetchedTopics] = await Promise.all([
+        homeService.getStories({ id: authToken ?? 0 }),
+        homeService.getTopics(),
+      ])
 
-      setStories(stories)
-      setTopics(topics)
+      setStories(fetchedStories)
+      setTopics(fetchedTopics)
     }
-    fetchStories()
+
+    if (isFocused) {
+      fetchData()
+    }
   }, [isFocused])
 
-  const handleInspiration = () => {
-    Alert.alert("Start a New Story", `Inspired by today's topic: ${todayTopic.topicName}`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Start Writing",
-        onPress: () => _props.navigation.navigate("CreateStory", { topic: todayTopic }),
-      },
-    ])
-  }
+  // const handleInspiration = () => {
+  //   Alert.alert("Start a New Story", `Inspired by today's topic: ${todayTopic.topicName}`, [
+  //     { text: "Cancel", style: "cancel" },
+  //     {
+  //       text: "Start Writing",
+  //       onPress: () => _props.navigation.navigate("CreateStory", { topic: todayTopic }),
+  //     },
+  //   ])
+  // }
 
   return (
     <View style={container}>

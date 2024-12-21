@@ -107,6 +107,40 @@ const en = {
     off: "Off",
     on: "On",
   },
+  toast: {
+    loginSuccess: "Login successful!",
+    loginFailed: "Login failed",
+    invalidEmail: "Invalid email format",
+    tempEmailNotAllowed: "Temporary email addresses are not allowed",
+    userExists: "Email or username already exists",
+    emptyFields: "Please fill in all fields",
+    registrationSuccess: "Registration successful!",
+    registrationFailed: "Registration failed. Please try again.",
+  },
+  auth: {
+    validation: {
+      invalidEmail: "Invalid email format",
+      tempEmailNotAllowed: "Temporary email addresses are not allowed",
+      emailValid: "Email is valid",
+    },
+    registration: {
+      success: {
+        title: "Success",
+        message: "Registration successful!",
+      },
+      error: {
+        title: {
+          invalidEmail: "Invalid Email",
+          registrationFailed: "Registration Failed",
+          error: "Error",
+        },
+        message: {
+          userExists: "Email or username is already registered",
+          registrationFailed: "Registration failed. Please try again.",
+        },
+      },
+    },
+  },
 }
 
 export default en

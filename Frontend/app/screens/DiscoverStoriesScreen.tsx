@@ -1,268 +1,284 @@
-import React, { FC, useEffect } from "react"
+import React, { FC, useEffect, useState } from "react"
 import {
-  ActivityIndicator,
-  ImageStyle,
-  SafeAreaView,
-  TextStyle,
   View,
-  ViewStyle,
+  SafeAreaView,
+  ScrollView,
   TouchableOpacity,
+  RefreshControl,
+  Dimensions,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
 } from "react-native"
-import { type ContentStyle } from "@shopify/flash-list"
-import Animated from "react-native-reanimated"
-import { EmptyState, ListView, Text } from "../components"
-import { isRTL } from "../i18n"
-import { DemoTabScreenProps } from "../navigators/DemoNavigator"
+import { Text } from "../components"
 import { colors, spacing } from "../theme"
-import { delay } from "../utils/delay"
-import { useEpisodeStore, Episode } from "app/store"
+import { DemoTabScreenProps } from "../navigators/DemoNavigator"
+import HomeService from "./HomeScreen/Service/HomeService"
+import FastImage from "react-native-fast-image"
 
-const ICON_SIZE = 14
+const SCREEN_WIDTH = Dimensions.get("window").width
+const CARD_WIDTH = (SCREEN_WIDTH - spacing.lg * 3) / 2
 
-export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (_props) => {
-  const episodeStore = useEpisodeStore()
+// Sample categories
+const CATEGORIES = ["Fantasy", "Horror", "Mystery", "Adventure", "Comedy"]
 
-  const [refreshing, setRefreshing] = React.useState(false)
-  const [isLoading, setIsLoading] = React.useState(false)
+// Fallback image if story image is missing
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1516796181074-bf453fbfa3e6?ixlib=rb-4.0.3&auto=format&fit=crop&w=2340&q=80"
 
-  // initially, kick off a background refresh without the refreshing UI
-  useEffect(() => {
-    ;(async function load() {
-      setIsLoading(true)
-      await episodeStore.fetchEpisodes()
+interface Story {
+  id: number
+  header: string
+  storyImage: string
+  generatedContent: string
+}
+
+export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = ({ navigation }) => {
+  const [stories, setStories] = useState<Story[]>([])
+  const [recommendedStories, setRecommendedStories] = useState<Story[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState("Fantasy")
+
+  const homeService = new HomeService()
+
+  const fetchStories = async () => {
+    setIsLoading(true)
+    try {
+      const response = await homeService.getStories()
+      if (response && Array.isArray(response)) {
+        setStories(response)
+        setRecommendedStories(response.slice(0, 10))
+      }
+    } catch (error) {
+      console.error("Failed to fetch stories:", error)
+    } finally {
       setIsLoading(false)
-    })()
+    }
+  }
+
+  useEffect(() => {
+    fetchStories()
   }, [])
 
-  // simulate a longer refresh, if the refresh is too fast for UX
-  async function manualRefresh() {
-    setRefreshing(true)
-    await Promise.all([episodeStore.fetchEpisodes(), delay(750)])
-    setRefreshing(false)
+  const handleStoryPress = (story: Story) => {
+    navigation.navigate("StoryDetailScreen", { story })
   }
+
+  const StoryCard = ({ story }: { story: Story }) => (
+    <TouchableOpacity
+      style={$storyCard}
+      onPress={() => handleStoryPress(story)}
+      activeOpacity={0.7}
+    >
+      <FastImage
+        source={{ uri: story.storyImage || FALLBACK_IMAGE }}
+        style={$storyImage}
+        resizeMode={FastImage.resizeMode.cover}
+      />
+      <View style={$storyContent}>
+        <Text style={$storyTitle} numberOfLines={2}>
+          {story.header || "Untitled Story"}
+        </Text>
+        <Text style={$storyContentText} numberOfLines={1}>
+          {story.generatedContent || "No content available"}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  )
+
+  const RecommendedStoryCard = ({ story }: { story: Story }) => (
+    <TouchableOpacity
+      style={$recommendedCard}
+      onPress={() => handleStoryPress(story)}
+      activeOpacity={0.7}
+    >
+      <FastImage
+        source={{ uri: story.storyImage || FALLBACK_IMAGE }}
+        style={$recommendedImage}
+        resizeMode={FastImage.resizeMode.cover}
+      />
+      <View style={$recommendedContent}>
+        <Text style={$recommendedTitle} numberOfLines={2}>
+          {story.header || "Untitled Story"}
+        </Text>
+        <Text style={$recommendedContentText} numberOfLines={1}>
+          {story.generatedContent || "No content available"}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  )
 
   return (
     <SafeAreaView style={$container}>
-      <ListView<Episode>
-        contentContainerStyle={$listContentContainer}
-        data={episodeStore.episodesForList.slice()}
-        extraData={episodeStore.favorites.length + episodeStore.episodes.length}
-        refreshing={refreshing}
-        estimatedItemSize={177}
-        onRefresh={manualRefresh}
-        ListEmptyComponent={
-          isLoading ? (
-            <ActivityIndicator />
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={fetchStories} />}
+      >
+        {/* Categories */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={$categoriesContainer}>
+          {CATEGORIES.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={[$categoryButton, selectedCategory === category && $selectedCategory]}
+              onPress={() => setSelectedCategory(category)}
+            >
+              <Text style={[$categoryText, selectedCategory === category && $selectedCategoryText]}>
+                {category}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Stories Grid */}
+        <View style={$storiesContainer}>
+          {isLoading ? (
+            <Text style={$messageText}>Loading stories...</Text>
+          ) : stories.length === 0 ? (
+            <Text style={$messageText}>No stories available</Text>
           ) : (
-            <EmptyState
-              preset="generic"
-              style={$emptyState}
-              headingTx={
-                episodeStore.favoritesOnly
-                  ? "discoverStoriesScreen.noFavoritesEmptyState.heading"
-                  : undefined
-              }
-              contentTx={
-                episodeStore.favoritesOnly
-                  ? "discoverStoriesScreen.noFavoritesEmptyState.content"
-                  : undefined
-              }
-              button={episodeStore.favoritesOnly ? "" : undefined}
-              buttonOnPress={manualRefresh}
-              imageStyle={$emptyStateImage}
-              ImageProps={{ resizeMode: "contain" }}
-            />
-          )
-        }
-        renderItem={({ item }) => (
-          <StoryCard
-            episode={item}
-            isFavorite={episodeStore.hasFavorite(item)}
-            onPressFavorite={() => episodeStore.toggleFavorite(item)}
-            navigation={_props.navigation}
-          />
-        )}
-      />
+            <View style={$storiesGrid}>
+              {stories.map((story, index) => (
+                <StoryCard key={story.id || index} story={story} />
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* Recommended Stories Section */}
+        <View style={$recommendedSection}>
+          <Text style={$sectionTitle}>Recommended For You</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={$recommendedContainer}
+          >
+            {recommendedStories.map((story, index) => (
+              <RecommendedStoryCard key={story.id || index} story={story} />
+            ))}
+          </ScrollView>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   )
 }
 
-const StoryCard = ({
-  episode,
-  isFavorite,
-  onPressFavorite,
-  navigation,
-}: {
-  episode: Episode
-  onPressFavorite: () => void
-  isFavorite: boolean
-  navigation: any
-}) => {
-  const handlePress = () => {
-    navigation.navigate("StoryDetailScreen", { story: episode })
-  }
-
-  return (
-    <TouchableOpacity style={$card} onPress={handlePress}>
-      <Animated.Image
-        source={{ uri: episode.link }}
-        style={$cardImage}
-        sharedTransitionTag={episode.link.toString()}
-      />
-      <View style={$cardContent}>
-        <Text style={$category} numberOfLines={1}>
-          {episode.author}
-        </Text>
-        <Text style={$title} numberOfLines={1}>
-          {episode.title}
-        </Text>
-        <Text style={$description} numberOfLines={2}>
-          {episode.description}
-        </Text>
-      </View>
-      <View style={$cardArrow}>
-        <Text style={$arrow}>➤</Text>
-      </View>
-    </TouchableOpacity>
-  )
-}
-
-// Updated styles
+// Styles with TypeScript types
 const $container: ViewStyle = {
   flex: 1,
-  backgroundColor: colors.palette.neutral150,
-  padding: spacing.md,
+  backgroundColor: colors.background,
 }
 
-const $listContentContainer: ContentStyle = {
-  paddingHorizontal: spacing.lg,
-  paddingTop: spacing.lg + spacing.xl,
-  paddingBottom: spacing.lg,
-}
-
-const $heading: ViewStyle = {
-  marginBottom: spacing.md,
-}
-
-const $item: ViewStyle = {
-  padding: spacing.md,
-  marginTop: spacing.md,
-  minHeight: 120,
-}
-
-const $itemThumbnail: ImageStyle = {
-  marginTop: spacing.sm,
-  borderRadius: 50,
-  alignSelf: "flex-start",
-}
-
-const $toggle: ViewStyle = {
-  marginTop: spacing.md,
-}
-
-const $labelStyle: TextStyle = {
-  textAlign: "left",
-}
-
-const $iconContainer: ViewStyle = {
-  height: ICON_SIZE,
-  width: ICON_SIZE,
-  flexDirection: "row",
-  marginEnd: spacing.sm,
-}
-
-const $metadata: TextStyle = {
-  color: colors.textDim,
-  marginTop: spacing.xs,
-  flexDirection: "row",
-}
-
-const $metadataText: TextStyle = {
-  color: colors.textDim,
-  marginEnd: spacing.md,
-  marginBottom: spacing.xs,
-}
-
-const $favoriteButton: ViewStyle = {
-  borderRadius: 17,
-  marginTop: spacing.md,
-  justifyContent: "flex-start",
-  backgroundColor: colors.palette.neutral300,
-  borderColor: colors.palette.neutral300,
+const $categoriesContainer: ViewStyle = {
   paddingHorizontal: spacing.md,
-  paddingTop: spacing.xxxs,
-  paddingBottom: 0,
-  minHeight: 32,
-  alignSelf: "flex-start",
+  paddingVertical: spacing.sm,
 }
 
-const $unFavoriteButton: ViewStyle = {
-  borderColor: colors.palette.primary100,
-  backgroundColor: colors.palette.primary100,
+const $categoryButton: ViewStyle = {
+  paddingHorizontal: spacing.md,
+  paddingVertical: spacing.xs,
+  marginRight: spacing.sm,
+  borderRadius: 20,
+  backgroundColor: colors.palette.neutral200,
 }
 
-const $emptyState: ViewStyle = {
-  marginTop: spacing.xxl,
+const $selectedCategory: ViewStyle = {
+  backgroundColor: colors.palette.primary500,
 }
 
-const $emptyStateImage: ImageStyle = {
-  transform: [{ scaleX: isRTL ? -1 : 1 }],
-}
-
-const $card: ViewStyle = {
-  flexDirection: "row",
-  backgroundColor: colors.palette.neutral100,
-  borderRadius: spacing.xs,
-  marginVertical: spacing.sm,
-  shadowColor: "#161313FF",
-  shadowOffset: { width: 0.01, height: 1 },
-  shadowOpacity: 0.8,
-  shadowRadius: 1,
-  elevation: 1,
-}
-
-const $cardImage: ImageStyle = {
-  width: 120,
-  borderTopLeftRadius: spacing.xxs,
-  borderBottomLeftRadius: spacing.xxs,
-}
-
-const $cardContent: ViewStyle = {
-  flex: 1,
-  padding: spacing.sm,
-  justifyContent: "center",
-}
-
-const $category: TextStyle = {
-  fontSize: 12,
-  padding: spacing.xxxs,
-  borderRadius: spacing.md,
-  borderWidth: 0.5,
-  borderColor: "transparent",
-  fontWeight: "600",
-  textTransform: "uppercase",
-  backgroundColor: colors.appSecondary,
-  marginBottom: spacing.xs,
-}
-
-const $title: TextStyle = {
-  fontSize: 20,
-  fontWeight: "bold",
-  marginBottom: spacing.xs,
-}
-
-const $description: TextStyle = {
-  fontSize: 12,
-  lineHeight: 20,
-}
-
-const $cardArrow: ViewStyle = {
-  justifyContent: "center",
-  alignItems: "center",
-  paddingHorizontal: spacing.sm,
-}
-
-const $arrow: TextStyle = {
-  fontSize: 18,
+const $categoryText: TextStyle = {
+  fontSize: 14,
   color: colors.text,
+}
+
+const $selectedCategoryText: TextStyle = {
+  color: colors.palette.neutral100,
+}
+
+const $storiesContainer: ViewStyle = {
+  padding: spacing.md,
+}
+
+const $storiesGrid: ViewStyle = {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
+}
+
+const $storyCard: ViewStyle = {
+  width: CARD_WIDTH,
+  marginBottom: spacing.md,
+  borderRadius: 12,
+  overflow: "hidden",
+}
+
+const $storyImage: ImageStyle = {
+  width: "100%",
+  height: SCREEN_WIDTH / 2.4,
+  borderRadius: 12,
+}
+
+const $storyContent: ViewStyle = {
+  padding: spacing.xs,
+}
+
+const $storyTitle: TextStyle = {
+  fontSize: 14,
+  fontWeight: "bold",
+  color: colors.text,
+}
+
+const $messageText: TextStyle = {
+  textAlign: "center",
+  padding: spacing.lg,
+  color: colors.text,
+}
+
+const $recommendedSection: ViewStyle = {
+  marginTop: spacing.lg,
+  paddingBottom: spacing.xl,
+}
+
+const $sectionTitle: TextStyle = {
+  fontSize: 18,
+  fontWeight: "bold",
+  color: colors.text,
+  paddingHorizontal: spacing.md,
+  marginBottom: spacing.sm,
+}
+
+const $recommendedContainer: ViewStyle = {
+  paddingHorizontal: spacing.md,
+}
+
+const $recommendedCard: ViewStyle = {
+  marginRight: spacing.md,
+  borderRadius: 12,
+  overflow: "hidden",
+}
+
+const $recommendedImage: ImageStyle = {
+  width: SCREEN_WIDTH / 1.5,
+  height: SCREEN_WIDTH / 3,
+  borderRadius: 12,
+}
+
+const $recommendedContent: ViewStyle = {
+  padding: spacing.xs,
+}
+
+const $recommendedTitle: TextStyle = {
+  fontSize: 14,
+  fontWeight: "bold",
+  color: colors.text,
+}
+
+const $storyContentText: TextStyle = {
+  fontSize: 12,
+  color: colors.text,
+  marginTop: spacing.xxs,
+}
+
+const $recommendedContentText: TextStyle = {
+  fontSize: 12,
+  color: colors.text,
+  marginTop: spacing.xxs,
 }
