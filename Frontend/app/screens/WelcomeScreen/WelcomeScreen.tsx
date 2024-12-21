@@ -6,6 +6,7 @@ import { useAuthenticationStore } from "app/store"
 import { DemoTabScreenProps } from "app/navigators/DemoNavigator"
 import { translate } from "../../i18n"
 import UserService from "./LoginService"
+import { toast } from "@baronha/ting"
 
 interface WelcomeScreenProps extends DemoTabScreenProps<"WelcomeScreen"> {}
 
@@ -30,7 +31,26 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = (_props) => {
       _props.navigation.navigate("Demo" as never)
     } catch (error) {
       console.error("Login failed", error)
+      toast({
+        title: translate("alerts.error"),
+        message: translate("toast.registrationFailed"),
+        preset: "error",
+        duration: 3000,
+      })
     }
+  }
+
+  const handleSubmit = () => {
+    if (!uName.trim() || !mail.trim()) {
+      toast({
+        title: translate("alerts.error"),
+        message: translate("toast.emptyFields"),
+        preset: "done",
+        duration: 3000,
+      })
+      return
+    }
+    login()
   }
 
   return (
@@ -61,7 +81,7 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = (_props) => {
         text={translate("welcomeScreen.logIn")}
         style={$loginButton}
         textStyle={$loginButtonText}
-        onPress={() => login()}
+        onPress={handleSubmit}
       />
     </SafeAreaView>
   )
