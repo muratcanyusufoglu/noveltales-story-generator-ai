@@ -28,10 +28,18 @@ router.post('/create', async (req, res) => {
     const gptResponse = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'You are a creative assistant that generates interesting stories based on user inputs.' },
+        { role: 'system', content: 'You are a creative assistant that generates interesting stories based on user inputs. Do not use asterisks (*) or any special symbols for formatting.' },
         {
           role: 'user',
-          content: `Create a story with the following parameters:\nCharacters: ${characterNames.join(', ')}\nTopic: ${topicName}\nTime Lapse: ${timeLapseTime}\nContent: ${contentText}\nHeader: ${header}\nIs Story Continues: ${isContinues}. Please not use * or any other symbols`,
+          content: `Create a story with the following parameters:
+Chapter 1
+Characters: ${characterNames.join(', ')}
+Topic: ${topicName}
+Time Lapse: ${timeLapseTime}
+Content: ${contentText}
+Header: ${header}
+Is Story Continues: ${isContinues}. 
+Important: Do not use asterisks or any special symbols in the story.`,
         },
       ],
     });
@@ -165,10 +173,12 @@ router.put('/:id/continue', async (req, res) => {
     const gptResponse = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'You are a creative assistant that generates interesting stories. Keep the same style and tone of the story.' },
+        { role: 'system', content: 'You are a creative assistant that generates interesting stories. Keep the same style and tone of the story. Do not use asterisks (*) or any special symbols for formatting.' },
         {
           role: 'user',
-          content: `Continue the story with the following content: ${contentText}. Part Number: ${totalPartCount +1}`,
+          content: `Chapter ${totalPartCount + 1}
+
+Continue the story with the following content: ${contentText}`,
         },
       ],
     });

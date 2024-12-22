@@ -10,7 +10,7 @@ import SelectService from "../service/SelectService"
 export const TimeSelectionScreen: FC<DemoTabScreenProps<"TimeSelectionScreen">> = ({
   navigation,
 }) => {
-  const { setTime, time, setTimeContent, timeContent } = useCreateStoryStore()
+  const { setStoryTime, time, setStoryTimeContent } = useCreateStoryStore()
   const [allTimes, setAllTimes] = React.useState([])
   const [searchQuery, setSearchQuery] = React.useState("")
 
@@ -44,8 +44,8 @@ export const TimeSelectionScreen: FC<DemoTabScreenProps<"TimeSelectionScreen">> 
         times={filteredTimes}
         selectedTime={time}
         onTimeSelect={(selectedTime) => {
-          setTime(selectedTime.id)
-          setTimeContent(selectedTime.description)
+          setStoryTime(selectedTime.id)
+          setStoryTimeContent(selectedTime.description)
         }}
       />
       <FooterComponent

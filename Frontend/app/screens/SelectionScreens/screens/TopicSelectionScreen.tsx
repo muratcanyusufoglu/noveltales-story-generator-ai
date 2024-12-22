@@ -51,6 +51,7 @@ export const TopicSelectionScreen: FC<DemoTabScreenProps<"TopicSelectionScreen">
       <FooterComponent
         onBack={() => navigation.goBack()}
         onNext={() => navigation.navigate("ContentSelectionScreen")}
+        isSelectionMade={topic !== null}
       />
     </SafeAreaView>
   )

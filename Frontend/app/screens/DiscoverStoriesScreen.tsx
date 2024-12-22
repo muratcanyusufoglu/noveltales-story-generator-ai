@@ -44,7 +44,7 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
   const fetchStories = async () => {
     setIsLoading(true)
     try {
-      const response = await homeService.getStories()
+      const response = await homeService.getStories({ id: 61 })
       if (response && Array.isArray(response)) {
         setStories(response)
         setRecommendedStories(response.slice(0, 10))

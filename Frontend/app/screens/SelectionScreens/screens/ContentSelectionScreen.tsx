@@ -51,6 +51,7 @@ export const ContentSelectionScreen: FC<DemoTabScreenProps<"ContentSelectionScre
       <FooterComponent
         onBack={() => navigation.goBack()}
         onNext={() => navigation.navigate("SummarySelectionScreen")}
+        isSelectionMade={content !== null}
       />
     </SafeAreaView>
   )

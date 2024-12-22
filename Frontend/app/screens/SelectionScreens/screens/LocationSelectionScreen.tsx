@@ -52,6 +52,7 @@ export const LocationSelectionScreen: FC<DemoTabScreenProps<"LocationSelectionSc
       <FooterComponent
         onBack={() => navigation.goBack()}
         onNext={() => navigation.navigate("TopicSelectionScreen")}
+        isSelectionMade={locations.length > 0}
       />
     </SafeAreaView>
   )

@@ -22,24 +22,20 @@ export const CharacterListComponent: FC<CharacterListComponentProps> = ({
       <TouchableOpacity
         style={[
           $character,
-          selectedCharacters.map((character) => character.id).includes(item.id)
-            ? $characterSelected
-            : $characterUnselected,
+          selectedCharacters.includes(item.name) ? $characterSelected : $characterUnselected,
           isLastRow && $lastRowMargin,
         ]}
         onPress={() => onCharacterSelect(item.name)}
       >
         <View style={$characterRow}>
-          {selectedCharacters.map((character) => character.id).includes(item.id) && (
+          {selectedCharacters.includes(item.name) && (
             <Icon icon="check" color={colors.inputBackground} size={20} />
           )}
           <Text
             numberOfLines={1}
             size="xs"
             style={
-              selectedCharacters.map((character) => character.id).includes(item.id)
-                ? $characterName
-                : $characterNameUnselected
+              selectedCharacters.includes(item.name) ? $characterName : $characterNameUnselected
             }
           >
             {item.name}

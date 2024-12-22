@@ -10,7 +10,7 @@ import SelectService from "../service/SelectService"
 export const TimeSelectionScreen: FC<DemoTabScreenProps<"TimeSelectionScreen">> = ({
   navigation,
 }) => {
-  const { setTime, time, setTimeContent, timeContent } = useCreateStoryStore()
+  const { setStoryTime, time, setStoryTimeContent, timeContent } = useCreateStoryStore()
   const [allTimes, setAllTimes] = React.useState([])
   const [searchQuery, setSearchQuery] = React.useState("")
 
@@ -29,6 +29,7 @@ export const TimeSelectionScreen: FC<DemoTabScreenProps<"TimeSelectionScreen">> 
   const filteredTimes = allTimes.filter((time) =>
     time.description.toLowerCase().includes(searchQuery.toLowerCase()),
   )
+  console.log("t,meeeee", time)
 
   return (
     <SafeAreaView style={$container}>
@@ -44,13 +45,14 @@ export const TimeSelectionScreen: FC<DemoTabScreenProps<"TimeSelectionScreen">> 
         times={filteredTimes}
         selectedTime={time}
         onTimeSelect={(selectedTime) => {
-          setTime(selectedTime.id)
-          setTimeContent(selectedTime.description)
+          setStoryTime(selectedTime.id)
+          setStoryTimeContent(selectedTime.description)
         }}
       />
       <FooterComponent
         onBack={() => navigation.goBack()}
         onNext={() => navigation.navigate("LocationSelectionScreen")}
+        isSelectionMade={time ? true : false}
       />
     </SafeAreaView>
   )

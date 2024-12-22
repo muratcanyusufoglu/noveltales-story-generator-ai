@@ -7,9 +7,21 @@ import { translate } from "app/i18n"
 interface FooterComponentProps {
   onNext: () => void
   onBack: () => void
+  isSelectionMade?: boolean
 }
 
-export const FooterComponent: FC<FooterComponentProps> = ({ onNext, onBack }) => {
+export const FooterComponent: FC<FooterComponentProps> = ({
+  onNext,
+  onBack,
+  isSelectionMade = false,
+}) => {
+  const handleNext = () => {
+    if (isSelectionMade) {
+      onNext()
+    }
+  }
+  console.log("iseeee", isSelectionMade)
+
   return (
     <View style={$footer}>
       <Button
@@ -21,8 +33,9 @@ export const FooterComponent: FC<FooterComponentProps> = ({ onNext, onBack }) =>
       <Button
         text={translate("common.nextStep")}
         textStyle={$buttonNextText}
-        onPress={onNext}
-        style={$buttonNext}
+        onPress={handleNext}
+        style={[$buttonNext, { opacity: isSelectionMade ? 1 : 0.5 }]}
+        disabled={!isSelectionMade}
       />
     </View>
   )
@@ -38,7 +51,6 @@ const $footer: ViewStyle = {
   paddingHorizontal: spacing.lg,
   width: "100%",
   backgroundColor: "transparent",
-  opacity: 1,
 }
 
 const $button: ViewStyle = {
@@ -46,7 +58,9 @@ const $button: ViewStyle = {
   borderRadius: spacing.sm,
   borderWidth: 0,
   paddingHorizontal: spacing.lg,
+  opacity: 0.9,
 }
+
 const $buttonNext: ViewStyle = {
   backgroundColor: colors.appPrimary,
   borderRadius: spacing.sm,

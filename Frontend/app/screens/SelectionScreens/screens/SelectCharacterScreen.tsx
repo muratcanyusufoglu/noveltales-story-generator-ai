@@ -32,12 +32,8 @@ export const CharacterSelectionScreen: FC<DemoTabScreenProps<"CharacterSelection
   )
 
   const toggleCharacterSelection = (character) => {
-    console.log(character, characters)
-    if (characters.includes(character)) {
-      setStoryCharacters(characters.filter((c) => c !== character))
-    } else {
-      setStoryCharacters([...characters, character])
-    }
+    setStoryCharacters(character)
+    console.log("characters", characters, character)
   }
 
   return (
@@ -58,6 +54,7 @@ export const CharacterSelectionScreen: FC<DemoTabScreenProps<"CharacterSelection
       <FooterComponent
         onBack={() => navigation.goBack()}
         onNext={() => navigation.navigate("TimeSelectionScreen")}
+        isSelectionMade={characters.length > 0}
       />
     </SafeAreaView>
   )

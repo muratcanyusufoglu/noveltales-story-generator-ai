@@ -43,7 +43,15 @@ export const createCreateStorySlice: StateCreator<RootStore, [], [], CreateStory
 
   // Actions
   setStoryTitle: (value) => set({ title: value }),
-  setStoryCharacters: (value) => set((state) => ({ characters: [...state.characters, value] })),
+  setStoryCharacters: (value) =>
+    set((state) => {
+      const exists = state.characters.includes(value)
+      return {
+        characters: exists
+          ? state.characters.filter((char) => char !== value)
+          : [...state.characters, value],
+      }
+    }),
   setStoryLocations: (value) => set({ locations: value }),
   setLocationId: (value) => set({ locationId: value }),
   setStoryTopic: (value) => set({ topic: value }),
