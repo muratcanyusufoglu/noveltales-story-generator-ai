@@ -73,6 +73,11 @@ const ar: Translations = {
     loading: "جاري التحميل...",
     activeSubscription: "الاشتراك المفعل",
     alreadySubscribed: "لقد قمت بالفعل بالاشتراك!",
+    readyForBetterStories: "هل أنت مستعد لتحويل قصصك؟",
+    writeStoriesLikeAPro: "اكتب قصصًا أفضل 3 مرات",
+    unlockYourCreativity: "أطلق العنان لإمكاناتك الإبداعية",
+    pureStorytellingExperience: "سرد قصص نقي وبدون انقطاع",
+    startYourJourney: "ابدأ رحلتك الإبداعية",
   },
   loadingScreen: {
     loading: "جاري التحميل...",
@@ -95,7 +100,7 @@ const ar: Translations = {
     myProfile: "ملفي الشخصي",
     editProfile: "تعديل الملف الشخصي",
     subscriptionSettings: "إعدادات الاشتراك",
-    logout: "تسجيل ��روج",
+    logout: "تسجيل خروج",
     email: "البريد الإلكتروني",
     creditBalance: "رصيد الائتمان",
     subscribed: "مشترك",
@@ -108,6 +113,14 @@ const ar: Translations = {
     continueStory: "استمرار القصة",
     off: "إيقاف",
     on: "تشغيل",
+  },
+  subscription: {
+    done: "تم",
+    restore: "استعادة",
+    termsAndConditions: "الشروط والأحكام",
+    privacyPolicy: "سياسة الخصوصية",
+    freeTrial: "٣ أيام تجربة مجانية",
+    perMonth: "/شهر",
   },
 }
 

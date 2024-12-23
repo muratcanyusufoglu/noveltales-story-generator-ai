@@ -73,6 +73,11 @@ const ko: Translations = {
     loading: "로딩 중...",
     activeSubscription: "활성 구독",
     alreadySubscribed: "이미 구독 중입니다!",
+    readyForBetterStories: "당신의 이야기를 변화시킬 준비가 되셨나요?",
+    writeStoriesLikeAPro: "3배 더 좋은 이야기 쓰기",
+    unlockYourCreativity: "당신의 창의적 잠재력을 깨우세요",
+    pureStorytellingExperience: "순수하고 끊김 없는 스토리텔링",
+    startYourJourney: "창의적인 여정을 시작하세요",
   },
   loadingScreen: {
     loading: "로딩 중...",
@@ -108,6 +113,28 @@ const ko: Translations = {
     continueStory: "이야기 계속하기",
     off: "끄기",
     on: "켜기",
+  },
+  subscription: {
+    done: "완료",
+    restore: "복원",
+    termsAndConditions: "이용약관",
+    privacyPolicy: "개인정보 처리방침",
+    freeTrial: "3일 무료 체험",
+    perMonth: "/월",
+    alerts: {
+      selectPackage: "패키지를 선택해주세요!",
+      purchaseError: "App Store 계정에 로그인되어 있는지 확인하고 다시 시도해주세요.",
+      restoreError: "구매 복원에 실패했습니다. 다시 시도해주세요.",
+      noSubscription: "복원할 수 있는 활성 구독이 없습니다.",
+      purchaseSuccess: "구매가 성공적으로 완료되었습니다!",
+      restoreSuccess: "구독이 복원되었습니다!",
+      appStoreRequired: {
+        title: "App Store 로그인 필요",
+        message: "구매하기 전에 설정 앱에서 Apple ID에 로그인해주세요.",
+        openSettings: "설정 열기",
+        cancel: "취소",
+      },
+    },
   },
 }
 

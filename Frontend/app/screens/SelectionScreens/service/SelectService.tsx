@@ -70,7 +70,7 @@ class SelectService {
   ) {
     try {
       const response = await axios.post(`${this.storyUrl}/create`, {
-        userId: userId, // Replace with actual user ID
+        userId: userId,
         characterIds: characters.map((c) => c.id),
         characterNames: characters.map((c) => c.name),
         topicId: topic,
@@ -87,9 +87,12 @@ class SelectService {
 
       if (response.status === 201) {
         console.log("Story created successfully", response.data)
+        return response.data
       }
+      return null
     } catch (error) {
       console.error("Failed to create story", error)
+      throw error
     }
   }
 }

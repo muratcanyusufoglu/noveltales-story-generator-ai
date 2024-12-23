@@ -73,6 +73,11 @@ const tr: Translations = {
     loading: "Yükleniyor...",
     activeSubscription: "Aktif Aboneliğe Devam",
     alreadySubscribed: "Zaten aboneliğe kayıt oldunuz!",
+    readyForBetterStories: "Hikayelerinizi Dönüştürmeye Hazır mısınız?",
+    writeStoriesLikeAPro: "3 Kat Daha İyi Hikayeler Yazın",
+    unlockYourCreativity: "Yaratıcı Potansiyelinizi Ortaya Çıkarın",
+    pureStorytellingExperience: "Saf, Kesintisiz Hikaye Anlatımı",
+    startYourJourney: "Yaratıcı Yolculuğunuza Başlayın",
   },
   loadingScreen: {
     loading: "Yükleniyor...",
@@ -108,6 +113,14 @@ const tr: Translations = {
     continueStory: "Hikayeye devam et",
     off: "Kapalı",
     on: "Açık",
+  },
+  subscription: {
+    done: "Tamam",
+    restore: "Geri Yükle",
+    termsAndConditions: "Şartlar ve Koşullar",
+    privacyPolicy: "Gizlilik Politikası",
+    freeTrial: "3 gün ücretsiz deneme",
+    perMonth: "/ay",
   },
 }
 

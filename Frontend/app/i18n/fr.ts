@@ -73,6 +73,11 @@ const fr: Translations = {
     loading: "Chargement...",
     activeSubscription: "Abonnement actif",
     alreadySubscribed: "Vous êtes déjà abonné!",
+    readyForBetterStories: "Prêt à Transformer Vos Histoires ?",
+    writeStoriesLikeAPro: "Écrivez des Histoires 3x Meilleures",
+    unlockYourCreativity: "Libérez Votre Potentiel Créatif",
+    pureStorytellingExperience: "Narration Pure et Sans Interruption",
+    startYourJourney: "Commencez Votre Voyage Créatif",
   },
   loadingScreen: {
     loading: "Chargement...",
@@ -108,6 +113,14 @@ const fr: Translations = {
     continueStory: "Continuer la lecture",
     off: "Désactivé",
     on: "Activé",
+  },
+  subscription: {
+    done: "Terminé",
+    restore: "Restaurer",
+    termsAndConditions: "Conditions Générales",
+    privacyPolicy: "Politique de Confidentialité",
+    freeTrial: "3 jours d'essai gratuit",
+    perMonth: "/mois",
   },
 }
 

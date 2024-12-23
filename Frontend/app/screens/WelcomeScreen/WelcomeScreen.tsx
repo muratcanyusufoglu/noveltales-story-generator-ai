@@ -107,6 +107,7 @@ const $instructionText: TextStyle = {
   color: colors.text,
   fontSize: 16,
   marginBottom: spacing.md,
+  marginHorizontal: spacing.md,
 }
 
 const $inputContainer: ViewStyle = {

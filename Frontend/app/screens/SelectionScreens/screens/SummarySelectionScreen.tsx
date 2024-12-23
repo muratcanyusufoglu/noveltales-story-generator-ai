@@ -38,7 +38,7 @@ export const SummarySelectionScreen: FC<DemoTabScreenProps<"SummarySelectionScre
   const userId = 61
 
   const createStory = async () => {
-    setCreditBalance(0)
+    setCreditBalance(5)
     if (!isSubscribedOrExistCreditBalance()) {
       openSheet()
       return
@@ -47,30 +47,30 @@ export const SummarySelectionScreen: FC<DemoTabScreenProps<"SummarySelectionScre
     if (isSubscribed || (!isSubscribed && creditBalance > 0)) {
       setLoading(true)
       try {
-        await service
-          .createStory(
-            userId,
-            characters,
-            topicId,
-            topic,
-            time,
-            timeContent,
-            contentId,
-            content,
-            locations,
-            locationId,
-            "Story ",
-            isEnabled,
-          )
-          .then((res) => {
-            const options = {
-              title: translate("alerts.done"),
-              message: translate("alerts.yourStoryIsReady"),
-            }
-            toast(options) // easy to use
-            console.log("ressss", res)
-            //navigation.navigate("StoryDetailScreen", { story: res.id })
-          })
+        const response = await service.createStory(
+          userId,
+          characters,
+          topicId,
+          topic,
+          time,
+          timeContent,
+          contentId,
+          content,
+          locations,
+          locationId,
+          "Story ",
+          isEnabled,
+        )
+
+        const options = {
+          title: translate("alerts.done"),
+          message: translate("alerts.yourStoryIsReady"),
+        }
+        toast(options)
+
+        // Navigate to StoryDetailScreen with the created story
+
+        navigation.navigate("StoryDetailScreen", { story: response })
 
         // Decrement credits only for non-subscribed users
         if (!isSubscribed && creditBalance > 0) {
@@ -81,7 +81,7 @@ export const SummarySelectionScreen: FC<DemoTabScreenProps<"SummarySelectionScre
           title: translate("alerts.error"),
           message: translate("alerts.thereWasAnError"),
         }
-        toast(options) // easy to use
+        toast(options)
         console.log(error)
       } finally {
         setLoading(false)
@@ -91,7 +91,7 @@ export const SummarySelectionScreen: FC<DemoTabScreenProps<"SummarySelectionScre
         title: translate("alerts.done"),
         message: translate("alerts.youHaveNoCreditsPleaseSubscribe"),
       }
-      toast(options) // easy to use
+      toast(options)
     }
   }
 
@@ -128,7 +128,7 @@ export const SummarySelectionScreen: FC<DemoTabScreenProps<"SummarySelectionScre
             label={translate("summaryScreen.characters")}
             value={
               characters.length > 0
-                ? characters.map((c) => c.name).join(", ")
+                ? characters.map((c) => c).join(", ")
                 : translate("common.notSelected")
             }
           />

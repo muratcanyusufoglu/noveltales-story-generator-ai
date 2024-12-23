@@ -39,7 +39,7 @@ export const HeaderComponent: FC<HeaderComponentProps> = ({
       </View>
       <View style={$stepContainer}>
         <Text style={$stepText}>
-          {translate("selectionScreens.stepFormat", { current: currentStep, total: 4 })}
+          {translate("selectionScreens.stepFormat", { current: currentStep, total: 5 })}
         </Text>
       </View>
       <ProgressBarComponent progressValue={progressValue} />
