@@ -79,7 +79,11 @@ const HomeScreensNavigator = () => {
           headerTitle: "",
           headerStyle: { backgroundColor: colors.background },
           headerRight: () =>
-            isSubscribed ? <Icon icon="crownPremium" size={40} /> : <Icon icon="crown" size={40} />,
+            isSubscribed ? (
+              <Icon icon="crownPremium" color={colors.palette.accent400} size={40} />
+            ) : (
+              <Icon icon="crown" size={40} />
+            ),
         }}
       />
       <HomeScreensStack.Screen

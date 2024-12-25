@@ -26,6 +26,13 @@ export interface CreateStoryStore {
   setStoryTimeContent: (value: string) => void
   setStoryTime: (value: number) => void
   resetStore: () => void
+
+  // Add new delete actions
+  deleteStoryCharacters: () => void
+  deleteStoryLocations: () => void
+  deleteStoryTopic: () => void
+  deleteStoryContent: () => void
+  deleteStoryTime: () => void
 }
 
 export const createCreateStorySlice: StateCreator<RootStore, [], [], CreateStoryStore> = (set) => ({
@@ -73,6 +80,13 @@ export const createCreateStorySlice: StateCreator<RootStore, [], [], CreateStory
       timeContent: "",
       time: 0,
     }),
+
+  // Add new delete actions
+  deleteStoryCharacters: () => set({ characters: [], locationId: 0 }),
+  deleteStoryLocations: () => set({ locations: "", locationId: 0 }),
+  deleteStoryTopic: () => set({ topic: "", topicId: 0 }),
+  deleteStoryContent: () => set({ content: "", contentId: 0 }),
+  deleteStoryTime: () => set({ timeContent: "", time: 0 }),
 })
 
 export const createStoryStoreSelector = (state: RootStore) => ({
@@ -97,4 +111,11 @@ export const createStoryStoreSelector = (state: RootStore) => ({
   setStoryTimeContent: state.setStoryTimeContent,
   setStoryTime: state.setStoryTime,
   resetStore: state.resetStore,
+
+  // Add new delete selectors
+  deleteStoryCharacters: state.deleteStoryCharacters,
+  deleteStoryLocations: state.deleteStoryLocations,
+  deleteStoryTopic: state.deleteStoryTopic,
+  deleteStoryContent: state.deleteStoryContent,
+  deleteStoryTime: state.deleteStoryTime,
 })

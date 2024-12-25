@@ -8,6 +8,7 @@ SplashScreen.preventAutoHideAsync()
 function IgniteApp() {
   const { setAuthToken } = useAuthenticationStore()
   setAuthToken(61)
+
   return <App hideSplashScreen={SplashScreen.hideAsync} />
 }
 

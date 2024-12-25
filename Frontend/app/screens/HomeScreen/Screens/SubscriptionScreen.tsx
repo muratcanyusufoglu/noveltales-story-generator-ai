@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Alert, Platform, Linking, ViewStyle, TextStyle, Dimensions } from "react-native"
+import { Alert, Platform, Linking, ViewStyle, TextStyle, Dimensions, View } from "react-native"
 import { Sheet, XStack, YStack, Text, Button, Card } from "tamagui"
 import Purchases, { PurchasesOffering, PurchasesPackage } from "react-native-purchases"
 import { colors, spacing } from "app/theme"
@@ -99,7 +99,7 @@ export function SubscriptionSheet({ isOpen, onClose }: SubscriptionSheetProps) {
       if (typeof customerInfo.entitlements.active.premium !== "undefined") {
         Alert.alert("Success", "Purchase completed successfully!")
         setIsSubscribed(true)
-        onClose
+        onClose()
       }
     } catch (error: any) {
       if (!error.userCancelled) {
@@ -199,7 +199,7 @@ export function SubscriptionSheet({ isOpen, onClose }: SubscriptionSheetProps) {
         <Button
           style={$headerButton}
           textProps={{ style: $headerText }}
-          size="$3"
+          size="$2"
           onPress={onClose}
           backgroundColor="transparent"
         >
@@ -212,17 +212,17 @@ export function SubscriptionSheet({ isOpen, onClose }: SubscriptionSheetProps) {
         </Text>
 
         {/* Features */}
-        <YStack space="$6" marginBottom="$8">
+        <YStack space="$4" marginBottom="$8">
           <XStack alignItems="center" space="$4">
-            <Text style={$featureIcon}>⚡️</Text>
+            <Text style={$featureIcon}>🔲</Text>
             <Text style={$featureText}>{translate("purchase.writeStoriesLikeAPro")}</Text>
           </XStack>
           <XStack alignItems="center" space="$4">
-            <Text style={$featureIcon}>🎯</Text>
+            <Text style={$featureIcon}>🔔</Text>
             <Text style={$featureText}>{translate("purchase.unlockYourCreativity")}</Text>
           </XStack>
           <XStack alignItems="center" space="$4">
-            <Text style={$featureIcon}>✨</Text>
+            <Text style={$featureIcon}>🚫</Text>
             <Text style={$featureText}>{translate("purchase.pureStorytellingExperience")}</Text>
           </XStack>
         </YStack>
@@ -230,75 +230,98 @@ export function SubscriptionSheet({ isOpen, onClose }: SubscriptionSheetProps) {
         {/* Subscription Cards */}
         <XStack space="$4" justifyContent="center" alignItems="center" marginBottom="$10">
           {currentOffering?.availablePackages.map((pkg) => (
-            <Card
-              key={pkg.identifier}
-              borderRadius="$10"
-              style={[
-                $subscriptionCard,
-                {
-                  backgroundColor:
-                    pkg.identifier === selectedPackage
-                      ? "#9fc4c2"
-                      : pkg.identifier === "$rc_lifetime"
-                      ? "#9fc4c2"
-                      : "#333",
-                },
-              ]}
-              onPress={() => handleSelectPackage(pkg)}
-            >
+            <View style={{ width: "35%" }}>
               {pkg.identifier === "$rc_annual" && (
-                <YStack space="$1" alignItems="center" position="absolute" top={-30}>
+                <YStack
+                  space="$0"
+                  alignItems="center"
+                  style={{
+                    backgroundColor: colors.palette.neutral500,
+                    borderTopLeftRadius: spacing.lg,
+                    borderTopRightRadius: spacing.lg,
+                    padding: 10,
+                    width: "100%",
+                    height: Dimensions.get("window").height * 0.06,
+                    borderWidth: pkg.identifier === selectedPackage ? 0 : 1,
+                    borderColor: colors.palette.neutral100,
+                  }}
+                >
                   <Text fontSize="$3" color={"white"} textAlign="center" numberOfLines={2}>
                     {translate("subscription.freeTrial")}
                   </Text>
                 </YStack>
               )}
-              <YStack space="$1" alignItems="center" justifyContent="center" height="100%">
-                <Text
-                  style={[
-                    $periodText,
-                    {
-                      color:
-                        pkg.identifier === selectedPackage || pkg.identifier === "$rc_lifetime"
-                          ? "black"
-                          : "white",
-                    },
-                  ]}
-                  numberOfLines={1}
-                >
-                  {pkg.product.title}
-                </Text>
-                <Text
-                  style={[
-                    $priceText,
-                    {
-                      color:
-                        pkg.identifier === selectedPackage || pkg.identifier === "$rc_lifetime"
-                          ? "black"
-                          : "white",
-                    },
-                  ]}
-                  numberOfLines={1}
-                >
-                  {pkg.product.priceString}
-                </Text>
+              <Card
+                key={pkg.identifier}
+                borderRadius="$10"
+                style={[
+                  $subscriptionCard,
+                  {
+                    backgroundColor:
+                      pkg.identifier === selectedPackage
+                        ? "#9fc4c2"
+                        : pkg.identifier === "$rc_lifetime"
+                        ? "#9fc4c2"
+                        : "transparent",
+                    borderTopLeftRadius: pkg.identifier === "$rc_annual" ? 0 : spacing.lg,
+                    borderTopRightRadius: pkg.identifier === "$rc_annual" ? 0 : spacing.lg,
+                    borderWidth: pkg.identifier === selectedPackage ? 0 : 1,
 
-                {pkg.identifier === "$rc_annual" && (
+                    height:
+                      pkg.identifier === "$rc_annual"
+                        ? Dimensions.get("window").height * 0.15
+                        : Dimensions.get("window").height * 0.2,
+                  },
+                ]}
+                onPress={() => handleSelectPackage(pkg)}
+              >
+                <YStack space="$1" alignItems="center" justifyContent="center" height="100%">
                   <Text
-                    fontSize="$3"
-                    color={pkg.identifier === selectedPackage ? "black" : "white"}
-                    textAlign="center"
+                    style={[
+                      $periodText,
+                      {
+                        color:
+                          pkg.identifier === selectedPackage || pkg.identifier === "$rc_lifetime"
+                            ? "black"
+                            : "white",
+                      },
+                    ]}
                     numberOfLines={1}
-                    position="absolute"
-                    bottom={0}
                   >
-                    {pkg.product.priceString.slice(0, 1)}
-                    {(pkg.product.price / 12).toString().slice(0, 3)}
-                    {translate("subscription.perMonth")}
+                    {pkg.product.title}
                   </Text>
-                )}
-              </YStack>
-            </Card>
+                  <Text
+                    style={[
+                      $priceText,
+                      {
+                        color:
+                          pkg.identifier === selectedPackage || pkg.identifier === "$rc_lifetime"
+                            ? "black"
+                            : "white",
+                      },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {pkg.product.priceString}
+                  </Text>
+
+                  {pkg.identifier === "$rc_annual" && (
+                    <Text
+                      fontSize="$3"
+                      color={pkg.identifier === selectedPackage ? "black" : "white"}
+                      textAlign="center"
+                      numberOfLines={1}
+                      position="absolute"
+                      bottom={0}
+                    >
+                      {pkg.product.priceString.slice(0, 1)}
+                      {(pkg.product.price / 12).toString().slice(0, 4)}
+                      {translate("subscription.perMonth")}
+                    </Text>
+                  )}
+                </YStack>
+              </Card>
+            </View>
           ))}
         </XStack>
 
@@ -349,7 +372,7 @@ const $headerButton: ViewStyle = {
 }
 
 const $headerText: TextStyle = {
-  fontSize: 20,
+  fontSize: 14,
   color: "white",
 }
 
@@ -375,10 +398,11 @@ const $featureText: TextStyle = {
 const $subscriptionCard: ViewStyle = {
   borderRadius: spacing.lg,
   padding: 10,
-  width: "40%",
   height: Dimensions.get("window").height * 0.2,
   justifyContent: "center",
   alignItems: "center",
+  borderWidth: 1,
+  borderColor: colors.palette.neutral100,
 }
 
 const $priceText: TextStyle = {
@@ -388,7 +412,7 @@ const $priceText: TextStyle = {
 
 const $periodText: TextStyle = {
   fontSize: 16,
-  marginTop: 5,
+  marginTop: 0,
 }
 
 const $continueButton: ViewStyle = {

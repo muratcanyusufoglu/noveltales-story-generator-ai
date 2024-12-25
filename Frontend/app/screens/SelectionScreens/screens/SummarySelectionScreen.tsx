@@ -25,6 +25,7 @@ export const SummarySelectionScreen: FC<DemoTabScreenProps<"SummarySelectionScre
     time,
     contentId,
     locationId,
+    resetStore,
   } = useCreateStoryStore()
 
   const service = new SelectService()
@@ -38,7 +39,6 @@ export const SummarySelectionScreen: FC<DemoTabScreenProps<"SummarySelectionScre
   const userId = 61
 
   const createStory = async () => {
-    setCreditBalance(5)
     if (!isSubscribedOrExistCreditBalance()) {
       openSheet()
       return
@@ -61,6 +61,8 @@ export const SummarySelectionScreen: FC<DemoTabScreenProps<"SummarySelectionScre
           "Story ",
           isEnabled,
         )
+
+        resetStore()
 
         const options = {
           title: translate("alerts.done"),
