@@ -40,6 +40,7 @@
       }
     },
     "ios": {
+      "buildNumber": "2",
       "icon": "./assets/images/novelTalesIcon.png",
       "supportsTablet": true,
       "bundleIdentifier": "com.noveltalesai.storygenerator",
@@ -52,7 +53,13 @@
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,
           "NSAllowsArbitraryLoadsInWebContent": true,
-          "NSAllowsLocalNetworking": true
+          "NSAllowsLocalNetworking": true,
+          "NSExceptionDomains": {
+            "141.11.109.227": {
+              "NSExceptionAllowsInsecureHTTPLoads": true,
+              "NSIncludesSubdomains": true
+            }
+          }
         }
       },
       "splash": {

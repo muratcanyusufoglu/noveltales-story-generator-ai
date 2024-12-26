@@ -55,6 +55,16 @@ class HomeService {
     })
     return response.data
   }
+
+  async getStoriesByCategory(categoryId: number) {
+    const categoryStoriesUrl = `${process.env.EXPO_PUBLIC_STORIES}/category/${categoryId}`
+    console.log("categoryStoriesUrl", categoryStoriesUrl)
+    const response = await axios({
+      method: "get",
+      url: categoryStoriesUrl,
+    })
+    return response.data
+  }
 }
 
 export default HomeService

@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from "react"
-import { View, FlatList, Dimensions } from "react-native"
+import { View, FlatList, Dimensions, ImageStyle } from "react-native"
 import { Text, Button } from "../../../components"
 import { useIsFocused } from "@react-navigation/native"
 import { TouchableOpacity } from "react-native-gesture-handler"
@@ -10,6 +10,8 @@ import Animated from "react-native-reanimated"
 import { colors, spacing } from "app/theme"
 import { DemoTabScreenProps } from "app/navigators/DemoNavigator"
 import FastImage from "react-native-fast-image"
+import { Spacer } from "tamagui"
+import { CategoryCard } from "app/components/CategoryComponent"
 
 // Pre-configure FastImage for all images
 FastImage.preload([
@@ -154,9 +156,23 @@ export const HomeScreen: FC<HomeScreenProps> = (_props) => {
   //   ])
   // }
 
+  const handleCategorySelect = (category: { id: number; title: string }) => {
+    _props.navigation.navigate("DiscoverScreen", {
+      selectedCategory: category.title,
+      categoryId: category.id,
+    })
+  }
+
   return (
     <View style={container}>
-      <TopicCard topic={topics} navigation={_props.navigation} />
+      <View style={{ height: 150 }}>
+        <CategoryCard
+          categories={topics}
+          selectedCategory={""}
+          onCategorySelect={handleCategorySelect}
+        />
+      </View>
+      <Spacer size={spacing.md} />
       <MyStoriesList stories={stories} navigation={_props.navigation} />
     </View>
   )
@@ -251,6 +267,7 @@ const topicCard: ViewStyle = {
   borderRadius: spacing.xs,
   width: Dimensions.get("window").width / 4,
   marginHorizontal: spacing.xxs,
+  height: Dimensions.get("window").width / 1.7,
 }
 
 const cardImage: ImageStyle = {
@@ -299,6 +316,7 @@ const topicTitle: TextStyle = {
   fontSize: 16,
   fontWeight: "bold",
   marginBottom: 8,
+  color: colors.text,
 }
 
 const description: TextStyle = {

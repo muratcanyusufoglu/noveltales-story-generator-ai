@@ -110,27 +110,26 @@ export const StoryDetailScreen: FC<StoryDetailScreenProps> = (_props) => {
         />
         {/* <Text style={header}>{story.header}</Text> */}
         <Text style={content}>{editedStory.generatedContent}</Text>
-        {/* {story.isContinues && (
-  
-      )} */}
-        <Button
-          size="$5"
-          marginVertical="$4"
-          backgroundColor={colors.appSecondary}
-          pressStyle={{ opacity: 0.8, scale: 0.98 }}
-          animation="quick"
-          icon={
-            <Icon
-              icon="createBook"
-              size={25}
-              color={colors.appPrimary}
-              style={{ marginRight: 10 }}
-            />
-          }
-          onPress={() => handleContinueStory()}
-        >
-          {translate("storyDetailScreen.letStoryContinue")}
-        </Button>
+        {story.isContinues && (
+          <Button
+            size="$5"
+            marginVertical="$4"
+            backgroundColor={colors.appSecondary}
+            pressStyle={{ opacity: 0.8, scale: 0.98 }}
+            animation="quick"
+            icon={
+              <Icon
+                icon="createBook"
+                size={25}
+                color={colors.appPrimary}
+                style={{ marginRight: 10 }}
+              />
+            }
+            onPress={() => handleContinueStory()}
+          >
+            {translate("storyDetailScreen.letStoryContinue")}
+          </Button>
+        )}
       </ScrollView>
 
       <Sheet modal open={isOpen} onOpenChange={setIsOpen}>

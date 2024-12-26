@@ -70,8 +70,14 @@ export const SummarySelectionScreen: FC<DemoTabScreenProps<"SummarySelectionScre
         }
         toast(options)
 
-        // Navigate to StoryDetailScreen with the created story
-
+        // Reset to home screen first, then navigate to story detail
+        navigation.reset({
+          index: 0,
+          routes: [
+            { name: "HomeScreen" },
+            { name: "StoryDetailScreen", params: { story: response } },
+          ],
+        })
         navigation.navigate("StoryDetailScreen", { story: response })
 
         // Decrement credits only for non-subscribed users

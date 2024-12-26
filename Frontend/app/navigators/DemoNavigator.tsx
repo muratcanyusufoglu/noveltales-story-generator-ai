@@ -27,7 +27,10 @@ export type DemoTabParamList = {
   DemoCommunity: undefined
   DemoShowroom: { queryIndex?: string; itemIndex?: string }
   DemoDebug: undefined
-  DiscoverScreen: undefined
+  DiscoverScreen: {
+    selectedCategory?: string
+    categoryId?: number
+  }
   CharacterSelectionScreen: undefined
   TimeSelectionScreen: undefined
   LocationSelectionScreen: undefined

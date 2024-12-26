@@ -15,6 +15,7 @@ import { colors, spacing } from "../theme"
 import { DemoTabScreenProps } from "../navigators/DemoNavigator"
 import HomeService from "./HomeScreen/Service/HomeService"
 import FastImage from "react-native-fast-image"
+import { CategoryCard } from "app/components/CategoryComponent"
 
 const SCREEN_WIDTH = Dimensions.get("window").width
 const CARD_WIDTH = (SCREEN_WIDTH - spacing.lg * 3) / 2
@@ -33,13 +34,21 @@ interface Story {
   generatedContent: string
 }
 
-export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = ({ navigation }) => {
+export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = ({
+  route,
+  navigation,
+}) => {
   const [stories, setStories] = useState<Story[]>([])
   const [recommendedStories, setRecommendedStories] = useState<Story[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState("Fantasy")
+  const [categories, setCategories] = useState<Array<{ id: number; title: string }>>([])
 
   const homeService = new HomeService()
+
+  // Get category params from route if they exist
+  const initialCategory = route.params?.selectedCategory
+  const initialCategoryId = route.params?.categoryId
 
   const fetchStories = async () => {
     setIsLoading(true)
@@ -56,9 +65,51 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
     }
   }
 
+  const fetchCategories = async () => {
+    try {
+      const response = await homeService.getTopics()
+      if (response && Array.isArray(response)) {
+        setCategories(response)
+        if (response.length > 0) {
+          setSelectedCategory(response[0].title)
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch categories:", error)
+    }
+  }
+
   useEffect(() => {
+    fetchCategories()
     fetchStories()
   }, [])
+
+  const fetchStoriesByCategory = async (categoryId: number) => {
+    setIsLoading(true)
+    try {
+      const response = await homeService.getStoriesByCategory(categoryId)
+      if (response && Array.isArray(response)) {
+        setStories(response)
+      }
+    } catch (error) {
+      setStories([])
+      console.error("Failed to fetch stories by category:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCategorySelect = (category: { id: number; title: string }) => {
+    setSelectedCategory(category.title)
+    fetchStoriesByCategory(category.id)
+  }
+
+  useEffect(() => {
+    if (initialCategory && initialCategoryId) {
+      setSelectedCategory(initialCategory)
+      fetchStoriesByCategory(initialCategoryId)
+    }
+  }, [initialCategory, initialCategoryId])
 
   const handleStoryPress = (story: Story) => {
     navigation.navigate("StoryDetailScreen", { story })
@@ -114,19 +165,11 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={fetchStories} />}
       >
         {/* Categories */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={$categoriesContainer}>
-          {CATEGORIES.map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[$categoryButton, selectedCategory === category && $selectedCategory]}
-              onPress={() => setSelectedCategory(category)}
-            >
-              <Text style={[$categoryText, selectedCategory === category && $selectedCategoryText]}>
-                {category}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <CategoryCard
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategorySelect={handleCategorySelect}
+        />
 
         {/* Stories Grid */}
         <View style={$storiesContainer}>
