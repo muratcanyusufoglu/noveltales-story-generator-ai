@@ -10,12 +10,13 @@ import Config from "../../config"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 import type { ApiConfig, ApiFeedResponse } from "./api.types"
 import { Episode } from "../../store/Episode"
+import { PaginationParams, PaginatedResponse, Story } from "../../store/Story"
 
 /**
  * Configuring the apisauce instance.
  */
 export const DEFAULT_API_CONFIG: ApiConfig = {
-  url: Config.API_URL,
+  url: "http://localhost:3000/api/",
   timeout: 10000,
 }
 
@@ -71,6 +72,62 @@ export class Api {
       if (__DEV__ && e instanceof Error) {
         console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
       }
+      return { kind: "bad-data" }
+    }
+  }
+
+  async getStories(
+    params?: PaginationParams,
+  ): Promise<{ kind: "ok"; data: PaginatedResponse<Story> } | GeneralApiProblem> {
+    try {
+      const response = await this.apisauce.get("/stories", params)
+      console.log("API getStories response:", response)
+
+      if (!response.ok) {
+        const problem = getGeneralApiProblem(response)
+        if (problem) return problem
+      }
+
+      return { kind: "ok", data: response.data }
+    } catch (e) {
+      return { kind: "bad-data" }
+    }
+  }
+
+  async getUserStories(
+    userId: number,
+    params?: PaginationParams,
+  ): Promise<{ kind: "ok"; data: PaginatedResponse<Story> } | GeneralApiProblem> {
+    try {
+      const response = await this.apisauce.get(`/stories/user/${userId}`, { params })
+      console.log("API getUserStories response:", response)
+
+      if (!response.ok) {
+        const problem = getGeneralApiProblem(response)
+        if (problem) return problem
+      }
+
+      return { kind: "ok", data: response.data }
+    } catch (e) {
+      return { kind: "bad-data" }
+    }
+  }
+
+  async getCategoryStories(
+    categoryId: number,
+    params?: PaginationParams,
+  ): Promise<{ kind: "ok"; data: PaginatedResponse<Story> } | GeneralApiProblem> {
+    try {
+      const response = await this.apisauce.get(`/stories/category/${categoryId}`, { params })
+      console.log("API getCategoryStories response:", response)
+
+      if (!response.ok) {
+        const problem = getGeneralApiProblem(response)
+        if (problem) return problem
+      }
+
+      return { kind: "ok", data: response.data }
+    } catch (e) {
       return { kind: "bad-data" }
     }
   }

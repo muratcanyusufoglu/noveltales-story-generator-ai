@@ -1,70 +1,85 @@
-import axios from "axios"
+import { Api } from "../../../services/api"
+import { PaginationParams } from "../../../store/Story"
 
-class HomeService {
-  storiesUrl = process.env.EXPO_PUBLIC_STORIES
-  topicsUrl = process.env.EXPO_PUBLIC_TOPICS
+export default class HomeService {
+  api: Api
 
-  async getStories({ id }: { id: number }) {
-    const allUserStoryUrl = process.env.EXPO_PUBLIC_STORIES + "/user/" + id
-    const response = await axios({
-      method: "get",
-      url: allUserStoryUrl,
-    })
-    return response.data
+  constructor() {
+    this.api = new Api()
+  }
+
+  async getStories({ id, page = 1, limit = 10 }: { id: number } & PaginationParams) {
+    try {
+      console.log("HomeService: Fetching stories for user:", id)
+      const response = await this.api.getUserStories(id, { page, limit })
+      console.log("HomeService: API response:", response)
+
+      if (response.kind === "ok" && response.data) {
+        return {
+          items: response.data.items || [],
+          currentPage: response.data.currentPage || page,
+          totalPages: response.data.totalPages || 1,
+          totalItems: response.data.totalItems || 0,
+        }
+      }
+      return {
+        items: [],
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+      }
+    } catch (error) {
+      console.error("Error fetching stories:", error)
+      return {
+        items: [],
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+      }
+    }
+  }
+
+  async getStoriesByCategory(categoryId: number, { page = 1, limit = 10 }: PaginationParams) {
+    try {
+      console.log("HomeService: Fetching stories for category:", categoryId)
+      const response = await this.api.getCategoryStories(categoryId, { page, limit })
+      console.log("HomeService: Category API response:", response)
+
+      if (response.kind === "ok" && response.data) {
+        return {
+          items: response.data.items || [],
+          currentPage: response.data.currentPage || page,
+          totalPages: response.data.totalPages || 1,
+          totalItems: response.data.totalItems || 0,
+        }
+      }
+      return {
+        items: [],
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+      }
+    } catch (error) {
+      console.error("Error fetching category stories:", error)
+      return {
+        items: [],
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+      }
+    }
   }
 
   async getTopics() {
-    const response = await axios({
-      method: "get",
-      url: this.topicsUrl,
-    })
-    return response.data
-  }
-
-  async updateStory({
-    id,
-    header,
-    generatedContent,
-  }: {
-    id: number
-    header: string
-    generatedContent: string
-  }) {
-    console.log("updateStory", id, header, generatedContent)
-    const updateStoryUrl = process.env.EXPO_PUBLIC_STORIES + "/" + id
-    const response = await axios({
-      method: "put",
-      url: updateStoryUrl,
-      data: {
-        header: header,
-        generatedContent: generatedContent,
-      },
-    })
-    console.log("updateStory response", response.data)
-    return response.data
-  }
-
-  async continueStory({ id, generatedContent }: { id: number; generatedContent: string }) {
-    const continueStoryUrl = process.env.EXPO_PUBLIC_STORIES + "/" + id + "/continue"
-    const response = await axios({
-      method: "put",
-      url: continueStoryUrl,
-      data: {
-        contentText: generatedContent,
-      },
-    })
-    return response.data
-  }
-
-  async getStoriesByCategory(categoryId: number) {
-    const categoryStoriesUrl = `${process.env.EXPO_PUBLIC_STORIES}/category/${categoryId}`
-    console.log("categoryStoriesUrl", categoryStoriesUrl)
-    const response = await axios({
-      method: "get",
-      url: categoryStoriesUrl,
-    })
-    return response.data
+    try {
+      const response = await this.api.apisauce.get("/topics")
+      if (response.ok && response.data) {
+        return response.data || []
+      }
+      return []
+    } catch (error) {
+      console.error("Error fetching topics:", error)
+      return []
+    }
   }
 }
-
-export default HomeService

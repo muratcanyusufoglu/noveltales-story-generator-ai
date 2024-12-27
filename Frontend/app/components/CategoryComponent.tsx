@@ -77,15 +77,16 @@ const $categoryCard: ViewStyle = {
   borderRadius: spacing.xs,
   overflow: "hidden",
   backgroundColor: colors.palette.neutral200,
+  height: 90,
 }
 
 const $selectedCategoryCard: ViewStyle = {
-  backgroundColor: colors.palette.primary500,
+  backgroundColor: colors.appPrimary,
 }
 
 const $categoryImage: ImageStyle = {
   width: "100%",
-  height: width / 4,
+  height: 60,
   borderTopLeftRadius: spacing.xs,
   borderTopRightRadius: spacing.xs,
 }
@@ -95,6 +96,7 @@ const $categoryContent: ViewStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   padding: spacing.xs,
+  height: 30,
 }
 
 const $categoryTitle: TextStyle = {

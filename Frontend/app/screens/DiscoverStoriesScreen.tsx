@@ -8,20 +8,19 @@ import {
   Dimensions,
   ViewStyle,
   TextStyle,
-  ImageStyle,
+  StyleProp,
+  FlatList,
 } from "react-native"
 import { Text } from "../components"
 import { colors, spacing } from "../theme"
 import { DemoTabScreenProps } from "../navigators/DemoNavigator"
 import HomeService from "./HomeScreen/Service/HomeService"
-import FastImage from "react-native-fast-image"
+import FastImage, { ImageStyle } from "react-native-fast-image"
 import { CategoryCard } from "app/components/CategoryComponent"
+import { PaginatedResponse } from "app/store/Story"
 
 const SCREEN_WIDTH = Dimensions.get("window").width
 const CARD_WIDTH = (SCREEN_WIDTH - spacing.lg * 3) / 2
-
-// Sample categories
-const CATEGORIES = ["Fantasy", "Horror", "Mystery", "Adventure", "Comedy"]
 
 // Fallback image if story image is missing
 const FALLBACK_IMAGE =
@@ -32,13 +31,21 @@ interface Story {
   header: string
   storyImage: string
   generatedContent: string
+  imageUrl: string
+  contentText: string
+  isContinues: boolean
 }
 
 export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = ({
   route,
   navigation,
 }) => {
-  const [stories, setStories] = useState<Story[]>([])
+  const [stories, setStories] = useState<PaginatedResponse<Story>>({
+    items: [],
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  })
   const [recommendedStories, setRecommendedStories] = useState<Story[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState("Fantasy")
@@ -50,16 +57,44 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
   const initialCategory = route.params?.selectedCategory
   const initialCategoryId = route.params?.categoryId
 
-  const fetchStories = async () => {
+  const fetchStories = async (page = 1) => {
+    if (isLoading) return
     setIsLoading(true)
     try {
-      const response = await homeService.getStories({ id: 61 })
-      if (response && Array.isArray(response)) {
-        setStories(response)
-        setRecommendedStories(response.slice(0, 10))
+      console.log("Fetching discover stories")
+      const response = await homeService.getStories({
+        id: 61,
+        page,
+        limit: 10,
+      })
+      console.log("Discover stories response:", response)
+
+      if (response && response.items) {
+        if (page === 1) {
+          setStories(response)
+          setRecommendedStories(response.items.slice(0, 10))
+        } else {
+          setStories((prev) => ({
+            ...response,
+            items: [...(prev.items || []), ...(response.items || [])],
+          }))
+        }
+      } else {
+        setStories({
+          items: [],
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0,
+        })
       }
     } catch (error) {
       console.error("Failed to fetch stories:", error)
+      setStories({
+        items: [],
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+      })
     } finally {
       setIsLoading(false)
     }
@@ -67,48 +102,88 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
 
   const fetchCategories = async () => {
     try {
+      console.log("Fetching categories")
       const response = await homeService.getTopics()
+      console.log("Categories response:", response)
       if (response && Array.isArray(response)) {
         setCategories(response)
-        if (response.length > 0) {
+        if (response.length > 0 && !initialCategory) {
           setSelectedCategory(response[0].title)
         }
+      } else {
+        setCategories([])
       }
     } catch (error) {
       console.error("Failed to fetch categories:", error)
+      setCategories([])
     }
   }
 
-  useEffect(() => {
-    fetchCategories()
-    fetchStories()
-  }, [])
-
-  const fetchStoriesByCategory = async (categoryId: number) => {
+  const fetchStoriesByCategory = async (categoryId: number, page = 1) => {
+    if (isLoading) return
     setIsLoading(true)
     try {
-      const response = await homeService.getStoriesByCategory(categoryId)
-      if (response && Array.isArray(response)) {
-        setStories(response)
+      console.log("Fetching stories for category:", categoryId)
+      const response = await homeService.getStoriesByCategory(categoryId, { page, limit: 10 })
+      console.log("Category stories response:", response)
+
+      if (response && response.items) {
+        if (page === 1) {
+          setStories(response)
+        } else {
+          setStories((prev) => ({
+            ...response,
+            items: [...(prev.items || []), ...(response.items || [])],
+          }))
+        }
+      } else {
+        setStories({
+          items: [],
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0,
+        })
       }
     } catch (error) {
-      setStories([])
       console.error("Failed to fetch stories by category:", error)
+      setStories({
+        items: [],
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
+  const loadMore = () => {
+    if (stories.currentPage < stories.totalPages && !isLoading) {
+      if (initialCategoryId) {
+        fetchStoriesByCategory(initialCategoryId, stories.currentPage + 1)
+      } else {
+        fetchStories(stories.currentPage + 1)
+      }
+    }
+  }
+
   const handleCategorySelect = (category: { id: number; title: string }) => {
     setSelectedCategory(category.title)
-    fetchStoriesByCategory(category.id)
+    fetchStoriesByCategory(category.id, 1)
   }
 
   useEffect(() => {
-    if (initialCategory && initialCategoryId) {
-      setSelectedCategory(initialCategory)
-      fetchStoriesByCategory(initialCategoryId)
+    const loadInitialData = async () => {
+      await fetchCategories()
+      if (initialCategory && initialCategoryId) {
+        setSelectedCategory(initialCategory)
+        fetchStoriesByCategory(initialCategoryId, 1)
+      } else {
+        fetchStories(1)
+      }
     }
+
+    loadInitialData()
   }, [initialCategory, initialCategoryId])
 
   const handleStoryPress = (story: Story) => {
@@ -161,9 +236,7 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
 
   return (
     <SafeAreaView style={$container}>
-      <ScrollView
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={fetchStories} />}
-      >
+      <View style={$root}>
         {/* Categories */}
         <CategoryCard
           categories={categories}
@@ -172,39 +245,56 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
         />
 
         {/* Stories Grid */}
-        <View style={$storiesContainer}>
-          {isLoading ? (
-            <Text style={$messageText}>Loading stories...</Text>
-          ) : stories.length === 0 ? (
-            <Text style={$messageText}>No stories available</Text>
-          ) : (
-            <View style={$storiesGrid}>
-              {stories.map((story, index) => (
-                <StoryCard key={story.id || index} story={story} />
-              ))}
+        <FlatList<Story>
+          data={stories.items}
+          renderItem={({ item }: { item: Story }) => <StoryCard story={item} />}
+          keyExtractor={(item: Story) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={$storiesGrid}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          refreshing={isLoading}
+          onRefresh={() => {
+            if (initialCategoryId) {
+              fetchStoriesByCategory(initialCategoryId, 1)
+            } else {
+              fetchStories(1)
+            }
+          }}
+          ListEmptyComponent={
+            <View style={$emptyContainer}>
+              <Text style={$messageText}>
+                {isLoading ? "Loading stories..." : "No stories available"}
+              </Text>
             </View>
-          )}
-        </View>
+          }
+        />
 
         {/* Recommended Stories Section */}
-        <View style={$recommendedSection}>
-          <Text style={$sectionTitle}>Recommended For You</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={$recommendedContainer}
-          >
-            {recommendedStories.map((story, index) => (
-              <RecommendedStoryCard key={story.id || index} story={story} />
-            ))}
-          </ScrollView>
-        </View>
-      </ScrollView>
+        {recommendedStories.length > 0 && (
+          <View style={$recommendedSection}>
+            <Text style={$sectionTitle}>Recommended For You</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={$recommendedContainer}
+            >
+              {recommendedStories.map((story, index) => (
+                <RecommendedStoryCard key={story.id || index} story={story} />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </View>
     </SafeAreaView>
   )
 }
 
-// Styles with TypeScript types
+// Styles
+const $root: ViewStyle = {
+  flex: 1,
+}
+
 const $container: ViewStyle = {
   flex: 1,
   backgroundColor: colors.background,
@@ -249,14 +339,21 @@ const $storiesGrid: ViewStyle = {
 const $storyCard: ViewStyle = {
   width: CARD_WIDTH,
   marginBottom: spacing.md,
+  backgroundColor: colors.palette.neutral100,
   borderRadius: 12,
   overflow: "hidden",
+  elevation: 2,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
 }
 
 const $storyImage: ImageStyle = {
   width: "100%",
-  height: SCREEN_WIDTH / 2.4,
-  borderRadius: 12,
+  height: CARD_WIDTH,
+  borderTopLeftRadius: 12,
+  borderTopRightRadius: 12,
 }
 
 const $storyContent: ViewStyle = {
@@ -299,8 +396,8 @@ const $recommendedCard: ViewStyle = {
 }
 
 const $recommendedImage: ImageStyle = {
-  width: SCREEN_WIDTH / 1.5,
-  height: SCREEN_WIDTH / 3,
+  width: 120,
+  height: 120,
   borderRadius: 12,
 }
 
@@ -324,4 +421,11 @@ const $recommendedContentText: TextStyle = {
   fontSize: 12,
   color: colors.text,
   marginTop: spacing.xxs,
+}
+
+const $emptyContainer: ViewStyle = {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingVertical: spacing.xl,
 }

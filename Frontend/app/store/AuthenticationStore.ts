@@ -35,7 +35,7 @@ export const createAuthenticationSlice: StateCreator<RootStore, [], [], Authenti
     const { isSubscribed, creditBalance } = get()
     console.log("isSubscribed :: ", isSubscribed)
     console.log("creditBalance :: ", creditBalance)
-    return isSubscribed || creditBalance - 5 > 0
+    return isSubscribed || creditBalance + 5 > 0
   },
 })
 

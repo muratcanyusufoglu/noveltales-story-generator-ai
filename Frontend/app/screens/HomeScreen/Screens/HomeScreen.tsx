@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from "react"
-import { View, FlatList, Dimensions, ImageStyle } from "react-native"
+import { View, FlatList, Dimensions, StyleProp } from "react-native"
 import { Text, Button } from "../../../components"
 import { useIsFocused } from "@react-navigation/native"
 import { TouchableOpacity } from "react-native-gesture-handler"
@@ -9,9 +9,30 @@ import { useAuthenticationStore } from "app/store"
 import Animated from "react-native-reanimated"
 import { colors, spacing } from "app/theme"
 import { DemoTabScreenProps } from "app/navigators/DemoNavigator"
-import FastImage from "react-native-fast-image"
+import FastImage, { ImageStyle } from "react-native-fast-image"
 import { Spacer } from "tamagui"
 import { CategoryCard } from "app/components/CategoryComponent"
+import { Story } from "app/store/Story"
+
+interface StoryListItem {
+  id: number
+  storyImage: string
+  header: string
+  generatedContent: string
+}
+
+interface PaginatedStories {
+  items: StoryListItem[]
+  currentPage: number
+  totalPages: number
+  totalItems: number
+}
+
+interface Topic {
+  id: number
+  title: string
+  images: string[]
+}
 
 // Pre-configure FastImage for all images
 FastImage.preload([
@@ -45,19 +66,23 @@ const InspirationOfTheDay: FC<{ todayTopic: any; handleInspiration: () => void }
 }
 
 // My Stories List Component
-const MyStoriesList: FC<{ stories: any[]; navigation: any }> = ({ stories, navigation }) => {
-  const handlePress = (item: any) => {
+const MyStoriesList: FC<{
+  stories: PaginatedStories
+  navigation: any
+  onLoadMore: () => void
+}> = ({ stories, navigation, onLoadMore }) => {
+  const handlePress = (item: StoryListItem) => {
     navigation.navigate("StoryDetailScreen", { story: item })
   }
-  const renderStory = ({ item }) => (
+
+  const renderStory = ({ item }: { item: StoryListItem }) => (
     <TouchableOpacity style={card} onPress={() => handlePress(item)}>
-      <Animated.Image
+      <FastImage
         source={{
           uri: item.storyImage,
-          cache: "force-cache",
+          cache: "immutable",
         }}
-        style={cardImage}
-        sharedTransitionTag={item.id.toString()}
+        style={cardImage as StyleProp<ImageStyle>}
       />
       <View style={cardContent}>
         <Text style={title} numberOfLines={1}>
@@ -70,25 +95,33 @@ const MyStoriesList: FC<{ stories: any[]; navigation: any }> = ({ stories, navig
     </TouchableOpacity>
   )
 
+  const handleEndReached = () => {
+    if (stories.totalPages > stories.currentPage) {
+      onLoadMore()
+    }
+  }
+
   return (
     <FlatList
-      data={stories}
+      data={stories.items}
       keyExtractor={(item) => item.id.toString()}
       renderItem={renderStory}
       contentContainerStyle={[list]}
       numColumns={2}
       scrollEnabled={true}
       showsVerticalScrollIndicator={false}
+      onEndReached={handleEndReached}
+      onEndReachedThreshold={0.5}
     />
   )
 }
 
-const TopicCard: FC<{ topic: any; navigation: any }> = ({ topic, navigation }) => {
-  const handlePress = (item: any) => {
+const TopicCard: FC<{ topic: Topic[]; navigation: any }> = ({ topic, navigation }) => {
+  const handlePress = (item: Topic) => {
     navigation.navigate("CreateStory", { topic: item })
   }
 
-  const renderTopic = ({ item }) => (
+  const renderTopic = ({ item }: { item: Topic }) => (
     <TouchableOpacity style={topicCard} onPress={() => handlePress(item)}>
       <FastImage
         source={{
@@ -96,7 +129,7 @@ const TopicCard: FC<{ topic: any; navigation: any }> = ({ topic, navigation }) =
           priority: FastImage.priority.normal,
           cache: FastImage.cacheControl.immutable,
         }}
-        style={topicCardImage}
+        style={topicCardImage as StyleProp<ImageStyle>}
         resizeMode={FastImage.resizeMode.cover}
       />
       <View style={topicCardContent}>
@@ -106,6 +139,7 @@ const TopicCard: FC<{ topic: any; navigation: any }> = ({ topic, navigation }) =
       </View>
     </TouchableOpacity>
   )
+
   return (
     <FlatList
       data={topic}
@@ -120,47 +154,99 @@ const TopicCard: FC<{ topic: any; navigation: any }> = ({ topic, navigation }) =
 }
 
 interface HomeScreenProps extends DemoTabScreenProps<"HomeScreen"> {}
+
 // Main HomePage Component
 export const HomeScreen: FC<HomeScreenProps> = (_props) => {
   const homeService = new HomeService()
-
   const { authToken } = useAuthenticationStore()
-  const [stories, setStories] = useState([])
-  const [topics, setTopics] = useState([])
-
+  const [stories, setStories] = useState<PaginatedStories>({
+    items: [],
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  })
+  const [topics, setTopics] = useState<Topic[]>([])
+  const [loading, setLoading] = useState(false)
   const isFocused = useIsFocused()
+
+  const fetchStories = async (page = 1) => {
+    if (loading || !authToken) return
+    setLoading(true)
+    try {
+      console.log("Fetching stories with authToken:", authToken)
+      const fetchedStories = await homeService.getStories({
+        id: authToken,
+        page,
+        limit: 10,
+      })
+      console.log("Fetched stories:", fetchedStories)
+
+      if (fetchedStories && fetchedStories.items) {
+        if (page === 1) {
+          setStories(fetchedStories)
+        } else {
+          setStories((prev) => ({
+            ...fetchedStories,
+            items: [...(prev.items || []), ...(fetchedStories.items || [])],
+          }))
+        }
+      } else {
+        setStories({
+          items: [],
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0,
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching stories:", error)
+      setStories({
+        items: [],
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadMore = () => {
+    if (stories.currentPage < stories.totalPages && !loading) {
+      fetchStories(stories.currentPage + 1)
+    }
+  }
 
   useEffect(() => {
     const fetchData = async () => {
-      const [fetchedStories, fetchedTopics] = await Promise.all([
-        homeService.getStories({ id: authToken ?? 0 }),
-        homeService.getTopics(),
-      ])
-
-      setStories(fetchedStories)
-      setTopics(fetchedTopics)
+      if (!authToken) return
+      const fetchedTopics = await homeService.getTopics()
+      if (fetchedTopics && Array.isArray(fetchedTopics)) {
+        setTopics(fetchedTopics)
+      } else {
+        setTopics([])
+      }
+      fetchStories(1)
     }
 
     if (isFocused) {
       fetchData()
     }
-  }, [isFocused])
-
-  // const handleInspiration = () => {
-  //   Alert.alert("Start a New Story", `Inspired by today's topic: ${todayTopic.topicName}`, [
-  //     { text: "Cancel", style: "cancel" },
-  //     {
-  //       text: "Start Writing",
-  //       onPress: () => _props.navigation.navigate("CreateStory", { topic: todayTopic }),
-  //     },
-  //   ])
-  // }
+  }, [isFocused, authToken])
 
   const handleCategorySelect = (category: { id: number; title: string }) => {
     _props.navigation.navigate("DiscoverScreen", {
       selectedCategory: category.title,
       categoryId: category.id,
     })
+  }
+
+  if (!authToken) {
+    return (
+      <View style={container}>
+        <Text style={title}>Please log in to view your stories</Text>
+      </View>
+    )
   }
 
   return (
@@ -173,7 +259,17 @@ export const HomeScreen: FC<HomeScreenProps> = (_props) => {
         />
       </View>
       <Spacer size={spacing.md} />
-      <MyStoriesList stories={stories} navigation={_props.navigation} />
+      {loading && stories.items.length === 0 ? (
+        <View style={centerContainer}>
+          <Text style={messageText}>Loading stories...</Text>
+        </View>
+      ) : stories.items.length === 0 ? (
+        <View style={centerContainer}>
+          <Text style={messageText}>No stories found</Text>
+        </View>
+      ) : (
+        <MyStoriesList stories={stories} navigation={_props.navigation} onLoadMore={loadMore} />
+      )}
     </View>
   )
 }
@@ -333,4 +429,16 @@ const cardArrow: ViewStyle = {
 const arrow: TextStyle = {
   fontSize: 18,
   color: "#FFFFFF",
+}
+
+const centerContainer: ViewStyle = {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+}
+
+const messageText: TextStyle = {
+  fontSize: 16,
+  color: colors.text,
+  textAlign: "center",
 }
