@@ -131,6 +131,26 @@ export class Api {
       return { kind: "bad-data" }
     }
   }
+
+  async continueStory(
+    id: number,
+    generatedContent: string,
+  ): Promise<{ kind: "ok"; data: Story } | GeneralApiProblem> {
+    try {
+      const response = await this.apisauce.put(`/stories/${id}/continue`, {
+        contentText: generatedContent,
+      })
+
+      if (!response.ok) {
+        const problem = getGeneralApiProblem(response)
+        if (problem) return problem
+      }
+
+      return { kind: "ok", data: response.data }
+    } catch (e) {
+      return { kind: "bad-data" }
+    }
+  }
 }
 
 // Singleton instance of the API for convenience

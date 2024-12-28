@@ -82,4 +82,17 @@ export default class HomeService {
       return []
     }
   }
+
+  async continueStory({ id, generatedContent }: { id: number; generatedContent: string }) {
+    try {
+      const response = await this.api.continueStory(id, generatedContent)
+      if (response.kind === "ok" && response.data) {
+        return response.data
+      }
+      throw new Error("Failed to continue story")
+    } catch (error) {
+      console.error("Error continuing story:", error)
+      throw error
+    }
+  }
 }

@@ -32,9 +32,10 @@ export const StoryDetailScreen: FC<StoryDetailScreenProps> = (_props) => {
   React.useLayoutEffect(() => {
     _props.navigation.setOptions({
       title: editedStory.header,
-      headerRight: () => (
-        <Icon icon="edit" size={24} color="black" onPress={() => setIsOpen(true)} />
-      ),
+      headerRight: () =>
+        story.isEditable ? (
+          <Icon icon="edit" size={24} color="black" onPress={() => setIsOpen(true)} />
+        ) : null,
     })
   }, [_props.navigation, editedStory.header])
 
@@ -75,15 +76,15 @@ export const StoryDetailScreen: FC<StoryDetailScreenProps> = (_props) => {
     }
     try {
       setIsLoading(true)
-      await homeService
-        .continueStory({
-          id: story.id,
-          generatedContent: editedStory.generatedContent,
-        })
-        .then((res) => {
-          setEditedStory((prev) => ({ ...prev, generatedContent: res.generatedContent }))
-          setCreditBalance(creditBalance - 1)
-        })
+      const response = await homeService.continueStory({
+        id: story.id,
+        generatedContent: editedStory.generatedContent,
+      })
+
+      setEditedStory((prev) => ({ ...prev, generatedContent: response.generatedContent }))
+      if (!isSubscribed) {
+        setCreditBalance(creditBalance - 1)
+      }
     } catch (error) {
       console.error("Failed to continue story:", error)
     } finally {
@@ -110,7 +111,7 @@ export const StoryDetailScreen: FC<StoryDetailScreenProps> = (_props) => {
         />
         {/* <Text style={header}>{story.header}</Text> */}
         <Text style={content}>{editedStory.generatedContent}</Text>
-        {story.isContinues && (
+        {story.isContinues && story.isEditable && (
           <Button
             size="$5"
             marginVertical="$4"

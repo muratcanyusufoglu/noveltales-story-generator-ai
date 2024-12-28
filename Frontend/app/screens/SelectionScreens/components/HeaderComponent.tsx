@@ -90,8 +90,11 @@ const $searchInput: TextStyle = {
 }
 
 const $headerTextContainer: ViewStyle = {
+  position: "absolute",
+  width: "100%",
   alignItems: "center",
-  flex: 1,
+  left: 0,
+  zIndex: -1,
 }
 
 const $headerRow: ViewStyle = {
@@ -99,11 +102,11 @@ const $headerRow: ViewStyle = {
   alignItems: "center",
   marginBottom: 15,
   marginHorizontal: spacing.lg,
+  position: "relative",
 }
 
 const $headerText: TextStyle = {
   fontSize: 20,
   fontWeight: "bold",
-  marginLeft: 15,
   color: colors.palette.neutral800,
 }

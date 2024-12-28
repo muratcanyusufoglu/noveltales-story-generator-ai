@@ -34,6 +34,7 @@ interface Story {
   imageUrl: string
   contentText: string
   isContinues: boolean
+  isEditable: boolean
 }
 
 export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = ({
@@ -61,40 +62,25 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
     if (isLoading) return
     setIsLoading(true)
     try {
-      console.log("Fetching discover stories")
       const response = await homeService.getStories({
         id: 61,
         page,
         limit: 10,
       })
-      console.log("Discover stories response:", response)
 
-      if (response && response.items) {
+      if (response) {
         if (page === 1) {
           setStories(response)
           setRecommendedStories(response.items.slice(0, 10))
         } else {
           setStories((prev) => ({
             ...response,
-            items: [...(prev.items || []), ...(response.items || [])],
+            items: [...prev.items, ...response.items],
           }))
         }
-      } else {
-        setStories({
-          items: [],
-          currentPage: 1,
-          totalPages: 1,
-          totalItems: 0,
-        })
       }
     } catch (error) {
       console.error("Failed to fetch stories:", error)
-      setStories({
-        items: [],
-        currentPage: 1,
-        totalPages: 1,
-        totalItems: 0,
-      })
     } finally {
       setIsLoading(false)
     }
@@ -102,20 +88,15 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
 
   const fetchCategories = async () => {
     try {
-      console.log("Fetching categories")
       const response = await homeService.getTopics()
-      console.log("Categories response:", response)
       if (response && Array.isArray(response)) {
         setCategories(response)
-        if (response.length > 0 && !initialCategory) {
+        if (response.length > 0) {
           setSelectedCategory(response[0].title)
         }
-      } else {
-        setCategories([])
       }
     } catch (error) {
       console.error("Failed to fetch categories:", error)
-      setCategories([])
     }
   }
 
@@ -123,35 +104,20 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
     if (isLoading) return
     setIsLoading(true)
     try {
-      console.log("Fetching stories for category:", categoryId)
       const response = await homeService.getStoriesByCategory(categoryId, { page, limit: 10 })
-      console.log("Category stories response:", response)
-
-      if (response && response.items) {
+      if (response) {
         if (page === 1) {
           setStories(response)
         } else {
           setStories((prev) => ({
             ...response,
-            items: [...(prev.items || []), ...(response.items || [])],
+            items: [...prev.items, ...response.items],
           }))
         }
-      } else {
-        setStories({
-          items: [],
-          currentPage: 1,
-          totalPages: 1,
-          totalItems: 0,
-        })
       }
     } catch (error) {
+      setStories({ items: [], currentPage: 1, totalPages: 1, totalItems: 0 })
       console.error("Failed to fetch stories by category:", error)
-      setStories({
-        items: [],
-        currentPage: 1,
-        totalPages: 1,
-        totalItems: 0,
-      })
     } finally {
       setIsLoading(false)
     }
@@ -173,20 +139,17 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
   }
 
   useEffect(() => {
-    const loadInitialData = async () => {
-      await fetchCategories()
-      if (initialCategory && initialCategoryId) {
-        setSelectedCategory(initialCategory)
-        fetchStoriesByCategory(initialCategoryId, 1)
-      } else {
-        fetchStories(1)
-      }
+    if (initialCategory && initialCategoryId) {
+      setSelectedCategory(initialCategory)
+      fetchStoriesByCategory(initialCategoryId, 1)
+    } else {
+      fetchStories(1)
     }
-
-    loadInitialData()
+    fetchCategories()
   }, [initialCategory, initialCategoryId])
 
   const handleStoryPress = (story: Story) => {
+    story.isEditable = false
     navigation.navigate("StoryDetailScreen", { story })
   }
 
@@ -254,37 +217,27 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           refreshing={isLoading}
-          onRefresh={() => {
-            if (initialCategoryId) {
-              fetchStoriesByCategory(initialCategoryId, 1)
-            } else {
-              fetchStories(1)
-            }
-          }}
+          onRefresh={() => fetchStories(1)}
           ListEmptyComponent={
-            <View style={$emptyContainer}>
-              <Text style={$messageText}>
-                {isLoading ? "Loading stories..." : "No stories available"}
-              </Text>
-            </View>
+            <Text style={$messageText}>
+              {isLoading ? "Loading stories..." : "No stories available"}
+            </Text>
           }
         />
 
         {/* Recommended Stories Section */}
-        {recommendedStories.length > 0 && (
-          <View style={$recommendedSection}>
-            <Text style={$sectionTitle}>Recommended For You</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={$recommendedContainer}
-            >
-              {recommendedStories.map((story, index) => (
-                <RecommendedStoryCard key={story.id || index} story={story} />
-              ))}
-            </ScrollView>
-          </View>
-        )}
+        <View style={$recommendedSection}>
+          <Text style={$sectionTitle}>Recommended For You</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={$recommendedContainer}
+          >
+            {recommendedStories.map((story, index) => (
+              <RecommendedStoryCard key={story.id || index} story={story} />
+            ))}
+          </ScrollView>
+        </View>
       </View>
     </SafeAreaView>
   )
@@ -293,6 +246,7 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
 // Styles
 const $root: ViewStyle = {
   flex: 1,
+  alignItems: "center",
 }
 
 const $container: ViewStyle = {
@@ -333,7 +287,10 @@ const $storiesContainer: ViewStyle = {
 const $storiesGrid: ViewStyle = {
   flexDirection: "row",
   flexWrap: "wrap",
-  justifyContent: "space-between",
+  justifyContent: "center",
+  alignItems: "center",
+  width: "100%",
+  paddingHorizontal: spacing.sm,
 }
 
 const $storyCard: ViewStyle = {
@@ -375,18 +332,23 @@ const $messageText: TextStyle = {
 const $recommendedSection: ViewStyle = {
   marginTop: spacing.lg,
   paddingBottom: spacing.xl,
+  width: "100%",
+  alignItems: "center",
 }
 
 const $sectionTitle: TextStyle = {
   fontSize: 18,
   fontWeight: "bold",
   color: colors.text,
-  paddingHorizontal: spacing.md,
+  textAlign: "center",
+  width: "100%",
   marginBottom: spacing.sm,
 }
 
 const $recommendedContainer: ViewStyle = {
   paddingHorizontal: spacing.md,
+  alignItems: "center",
+  justifyContent: "center",
 }
 
 const $recommendedCard: ViewStyle = {
@@ -421,11 +383,4 @@ const $recommendedContentText: TextStyle = {
   fontSize: 12,
   color: colors.text,
   marginTop: spacing.xxs,
-}
-
-const $emptyContainer: ViewStyle = {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  paddingVertical: spacing.xl,
 }

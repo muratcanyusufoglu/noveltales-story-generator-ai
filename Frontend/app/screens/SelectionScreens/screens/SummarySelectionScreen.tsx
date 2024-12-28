@@ -78,7 +78,7 @@ export const SummarySelectionScreen: FC<DemoTabScreenProps<"SummarySelectionScre
             { name: "StoryDetailScreen", params: { story: response } },
           ],
         })
-        navigation.navigate("StoryDetailScreen", { story: response })
+        navigation.navigate("StoryDetailScreen", { story: { ...response, isEditable: true } })
 
         // Decrement credits only for non-subscribed users
         if (!isSubscribed && creditBalance > 0) {

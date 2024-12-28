@@ -19,6 +19,7 @@ interface StoryListItem {
   storyImage: string
   header: string
   generatedContent: string
+  isEditable: boolean
 }
 
 interface PaginatedStories {
@@ -72,6 +73,7 @@ const MyStoriesList: FC<{
   onLoadMore: () => void
 }> = ({ stories, navigation, onLoadMore }) => {
   const handlePress = (item: StoryListItem) => {
+    item.isEditable = true
     navigation.navigate("StoryDetailScreen", { story: item })
   }
 

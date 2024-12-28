@@ -1,4 +1,4 @@
-import React, { FC } from "react"
+import React, { FC, useState, useCallback } from "react"
 import {
   FlatList,
   TouchableOpacity,
@@ -25,20 +25,38 @@ export const CategoryCard: FC<CategoryCardProps> = ({
   selectedCategory,
   onCategorySelect,
 }) => {
+  const [showImages, setShowImages] = useState(false)
+  let hideTimeout: NodeJS.Timeout
+
+  const handleScroll = useCallback(() => {
+    setShowImages(true)
+    clearTimeout(hideTimeout)
+
+    hideTimeout = setTimeout(() => {
+      setShowImages(false)
+    }, 2000)
+  }, [])
+
   const renderCategory = ({ item }) => (
     <TouchableOpacity
-      style={[$categoryCard, selectedCategory === item.title && $selectedCategoryCard]}
+      style={[
+        $categoryCard,
+        selectedCategory === item.title && $selectedCategoryCard,
+        { height: showImages ? 120 : 30 },
+      ]}
       onPress={() => onCategorySelect(item)}
     >
-      <FastImage
-        source={{
-          uri: item.images[0],
-          priority: FastImage.priority.normal,
-          cache: FastImage.cacheControl.immutable,
-        }}
-        style={$categoryImage}
-        resizeMode={FastImage.resizeMode.cover}
-      />
+      {showImages && (
+        <FastImage
+          source={{
+            uri: item.images[0],
+            priority: FastImage.priority.normal,
+            cache: FastImage.cacheControl.immutable,
+          }}
+          style={$categoryImage}
+          resizeMode={FastImage.resizeMode.cover}
+        />
+      )}
       <View style={$categoryContent}>
         <Text
           style={[$categoryTitle, selectedCategory === item.title && $selectedCategoryTitle]}
@@ -62,6 +80,8 @@ export const CategoryCard: FC<CategoryCardProps> = ({
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={$list}
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
     />
   )
 }
@@ -77,7 +97,7 @@ const $categoryCard: ViewStyle = {
   borderRadius: spacing.xs,
   overflow: "hidden",
   backgroundColor: colors.palette.neutral200,
-  height: 90,
+  height: (props) => (props.showImages ? 120 : 30),
 }
 
 const $selectedCategoryCard: ViewStyle = {
@@ -86,17 +106,18 @@ const $selectedCategoryCard: ViewStyle = {
 
 const $categoryImage: ImageStyle = {
   width: "100%",
-  height: 60,
+  height: 90,
   borderTopLeftRadius: spacing.xs,
   borderTopRightRadius: spacing.xs,
 }
 
 const $categoryContent: ViewStyle = {
-  flexDirection: "row",
+  width: "100%",
   alignItems: "center",
-  justifyContent: "space-between",
+  justifyContent: "center",
   padding: spacing.xs,
   height: 30,
+  backgroundColor: colors.palette.neutral200,
 }
 
 const $categoryTitle: TextStyle = {

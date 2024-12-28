@@ -47,6 +47,7 @@ export type DemoTabParamList = {
       generatedContent: string
       storyImage: string
       isContinues: boolean
+      isEditable: boolean
     }
   }
   HomeScreen: undefined
@@ -63,6 +64,7 @@ const Tab = createBottomTabNavigator<DemoTabParamList>()
 
 const SelectScreensStack = createNativeStackNavigator<DemoTabParamList>()
 const HomeScreensStack = createNativeStackNavigator<DemoTabParamList>()
+const DiscoverScreensStack = createNativeStackNavigator<DemoTabParamList>()
 
 const HomeScreensNavigator = () => {
   const { isSubscribed, creditBalance, authEmail } = useAuthenticationStore()
@@ -117,6 +119,40 @@ const SelectScreenNavigator = () => {
   )
 }
 
+const DiscoverScreenNavigator = () => {
+  const { isSubscribed, authEmail } = useAuthenticationStore()
+
+  return (
+    <DiscoverScreensStack.Navigator>
+      <DiscoverScreensStack.Screen
+        name="DiscoverScreen"
+        component={DiscoverStoriesScreen}
+        options={{
+          headerShown: true,
+          headerLeft: () => (
+            <Text style={$headerRight}>
+              {translate("homeScreen.welcome")} {authEmail}
+            </Text>
+          ),
+          headerTitle: "",
+          headerStyle: { backgroundColor: colors.background },
+          headerRight: () =>
+            isSubscribed ? (
+              <Icon icon="crownPremium" color={colors.palette.accent400} size={40} />
+            ) : (
+              <Icon icon="crown" size={40} />
+            ),
+        }}
+      />
+      <DiscoverScreensStack.Screen
+        name="StoryDetailScreen"
+        component={StoryDetailScreen}
+        options={{ headerBackTitleVisible: false }}
+      />
+    </DiscoverScreensStack.Navigator>
+  )
+}
+
 export function DemoNavigator() {
   const { bottom } = useSafeAreaInsets()
 
@@ -166,7 +202,7 @@ export function DemoNavigator() {
 
       <Tab.Screen
         name="DiscoverScreen"
-        component={DiscoverStoriesScreen}
+        component={DiscoverScreenNavigator}
         options={{
           tabBarAccessibilityLabel: translate("navigator.discover"),
           tabBarLabel: ({ focused }) => (
