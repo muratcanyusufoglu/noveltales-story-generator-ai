@@ -79,15 +79,29 @@ Important: Do not use asterisks or any special symbols in the story.`,
 // Get all stories
 router.get('/', async (req, res) => {
   try {
-    const stories = await Story.findAll({
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { count, rows: stories } = await Story.findAndCountAll({
       include: [
         { model: Character, through: 'StoryCharacters' },
         { model: Topic },
         { model: Timelapse },
         { model: Content },
       ],
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
     });
-    res.status(200).json(stories);
+    
+
+    res.status(200).json({
+      items: stories,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      totalItems: count,
+    });
   } catch (error) {
     console.error('Failed to retrieve stories', error);
     res.status(500).json({ error: 'Failed to retrieve stories' });
@@ -120,15 +134,25 @@ router.get('/:id', async (req, res) => {
 router.get('/user/:userId', async (req, res) => {
   const { userId } = req.params;
   const userIdNumb = parseInt(userId);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
 
   try {
-    const stories = await Story.findAll({
-      where: {userId: userIdNumb},
-
+    const { count, rows: stories } = await Story.findAndCountAll({
+      where: { userId: userIdNumb },
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
     });
 
     if (stories.length > 0) {
-      res.status(200).json(stories);
+      res.status(200).json({
+        stories,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+        totalItems: count,
+      });
     } else {
       res.status(404).json({ error: 'No stories found for the user' });
     }
@@ -138,6 +162,37 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
+// Get stories by category
+router.get('/category/:categoryId', async (req, res) => {
+  const { categoryId } = req.params;
+  const categoryIdNumb = parseInt(categoryId);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const { count, rows: stories } = await Story.findAndCountAll({
+      where: { topicId: categoryIdNumb },
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+    });
+
+    if (stories.length > 0) {
+      res.status(200).json({
+        stories,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+        totalItems: count,
+      });
+    } else {
+      res.status(404).json({ error: 'No stories found for this category' });
+    }
+  } catch (error) {
+    console.error('Failed to retrieve stories by category', error);
+    res.status(500).json({ error: 'Failed to retrieve stories by category' });
+  }
+});
 
 // Update a story
 router.put('/:id', async (req, res) => {
