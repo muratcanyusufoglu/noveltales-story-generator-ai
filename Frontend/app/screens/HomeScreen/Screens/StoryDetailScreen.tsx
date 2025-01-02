@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react"
-import { ScrollView } from "react-native"
+import { ScrollView, SafeAreaView, View, TouchableOpacity } from "react-native"
 import { ViewStyle, TextStyle, ImageStyle } from "react-native"
 import Animated from "react-native-reanimated"
 import { DemoTabScreenProps } from "app/navigators/DemoNavigator"
@@ -13,6 +13,14 @@ import { useAuthenticationStore, useSubscriptionStore } from "app/store"
 
 interface StoryDetailScreenProps extends DemoTabScreenProps<"StoryDetailScreen"> {}
 
+interface ScrollEvent {
+  nativeEvent: {
+    contentOffset: { y: number }
+    layoutMeasurement: { height: number }
+    contentSize: { height: number }
+  }
+}
+
 export const StoryDetailScreen: FC<StoryDetailScreenProps> = (_props) => {
   const { story } = _props.route.params
   const [isOpen, setIsOpen] = useState(false)
@@ -21,14 +29,13 @@ export const StoryDetailScreen: FC<StoryDetailScreenProps> = (_props) => {
     generatedContent: story.generatedContent,
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [isScrolledToEnd, setIsScrolledToEnd] = useState(false) // Track if scroll is at the end
+  const [isScrolledToEnd, setIsScrolledToEnd] = useState(false)
   const { creditBalance, setCreditBalance, isSubscribed, isSubscribedOrExistCreditBalance } =
     useAuthenticationStore()
   const { openSheet } = useSubscriptionStore()
 
   const homeService = new HomeService()
 
-  // Set navigation options with edit button
   React.useLayoutEffect(() => {
     _props.navigation.setOptions({
       title: editedStory.header,
@@ -55,22 +62,14 @@ export const StoryDetailScreen: FC<StoryDetailScreenProps> = (_props) => {
     }
   }
 
-  const handleScroll = (event) => {
+  const handleScroll = (event: ScrollEvent) => {
     const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent
-    const isEndReached = contentOffset.y + 150 > contentSize.height - layoutMeasurement.height + 50 // Buffer for precision
+    const isEndReached = contentOffset.y + 150 > contentSize.height - layoutMeasurement.height + 50
     setIsScrolledToEnd(isEndReached)
   }
 
   const handleContinueStory = async () => {
     if (!isSubscribedOrExistCreditBalance()) {
-      // const options = {
-      //   title: translate("alerts.error"),
-      //   message: translate("alerts.youHaveNoCreditsPleaseSubscribe"),
-      //   preset: "error",
-      //   duration: 2,
-      //   haptic: "error",
-      // }
-      // toast(options) // easy to use
       openSheet()
       return
     }
@@ -95,43 +94,41 @@ export const StoryDetailScreen: FC<StoryDetailScreenProps> = (_props) => {
   return (
     <>
       {isLoading && <LoadingAnimation visible={isLoading} />}
-      <ScrollView
-        contentContainerStyle={[
-          contentContainer,
-          { paddingBottom: isScrolledToEnd ? 120 : 0 }, // Adjust padding dynamically
-        ]}
-        onScroll={handleScroll}
-      >
-        <Animated.Image
-          source={{
-            uri: story.storyImage,
-          }}
-          style={[image]}
-          sharedTransitionTag={story.id.toString()}
-        />
-        {/* <Text style={header}>{story.header}</Text> */}
-        <Text style={content}>{editedStory.generatedContent}</Text>
-        {story.isContinues && story.isEditable && (
-          <Button
-            size="$5"
-            marginVertical="$4"
-            backgroundColor={colors.appSecondary}
-            pressStyle={{ opacity: 0.8, scale: 0.98 }}
-            animation="quick"
-            icon={
-              <Icon
-                icon="createBook"
-                size={25}
-                color={colors.appPrimary}
-                style={{ marginRight: 10 }}
-              />
-            }
-            onPress={() => handleContinueStory()}
-          >
-            {translate("storyDetailScreen.letStoryContinue")}
-          </Button>
-        )}
-      </ScrollView>
+      <SafeAreaView style={$root}>
+        <ScrollView
+          contentContainerStyle={[$contentContainer, { paddingBottom: isScrolledToEnd ? 120 : 0 }]}
+          onScroll={handleScroll}
+        >
+          <Animated.Image
+            source={{
+              uri: story.storyImage,
+            }}
+            style={[$image]}
+            sharedTransitionTag={story.id.toString()}
+          />
+          <Text style={$content}>{editedStory.generatedContent}</Text>
+          {story.isContinues && story.isEditable && (
+            <Button
+              size="$5"
+              marginVertical="$4"
+              backgroundColor={colors.appSecondary}
+              pressStyle={{ opacity: 0.8, scale: 0.98 }}
+              animation="quick"
+              icon={
+                <Icon
+                  icon="createBook"
+                  size={25}
+                  color={colors.appPrimary}
+                  style={{ marginRight: 10 }}
+                />
+              }
+              onPress={() => handleContinueStory()}
+            >
+              {translate("storyDetailScreen.letStoryContinue")}
+            </Button>
+          )}
+        </ScrollView>
+      </SafeAreaView>
 
       <Sheet modal open={isOpen} onOpenChange={setIsOpen}>
         <Sheet.Overlay />
@@ -161,27 +158,48 @@ export const StoryDetailScreen: FC<StoryDetailScreenProps> = (_props) => {
 }
 
 // Styles
-const container: ViewStyle = {
+const $root: ViewStyle = {
   flex: 1,
-  backgroundColor: colors.background, // Dark background
+  backgroundColor: colors.background,
 }
 
-const image: ImageStyle = {
+const $header: ViewStyle = {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 16,
+  backgroundColor: colors.background,
+}
+
+const $headerContainer: ViewStyle = {
+  width: "100%",
+  flexDirection: "row",
+  alignItems: "center",
+}
+
+const $headerTitle: TextStyle = {
+  fontSize: 18,
+  fontWeight: "bold",
+  textAlign: "center",
+  color: colors.text,
+  flex: 1,
+}
+
+const $backButton: ViewStyle = {
+  padding: 8,
+  marginHorizontal: 8,
+}
+
+const $contentContainer: ViewStyle = {
+  paddingHorizontal: 16,
+}
+
+const $image: ImageStyle = {
   width: "100%",
   height: 300,
 }
 
-const contentContainer: ViewStyle = {
-  paddingHorizontal: 16,
-}
-
-const header: TextStyle = {
-  fontSize: 20,
-  fontWeight: "bold",
-  marginVertical: 12,
-}
-
-const content: TextStyle = {
+const $content: TextStyle = {
   fontSize: 16,
   lineHeight: 24,
   marginVertical: 12,

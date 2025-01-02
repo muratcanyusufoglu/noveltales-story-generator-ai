@@ -115,6 +115,11 @@ const SelectScreenNavigator = () => {
       <SelectScreensStack.Screen name="TopicSelectionScreen" component={TopicSelectionScreen} />
       <SelectScreensStack.Screen name="ContentSelectionScreen" component={ContentSelectionScreen} />
       <SelectScreensStack.Screen name="SummarySelectionScreen" component={SummarySelectionScreen} />
+      <SelectScreensStack.Screen
+        name="StoryDetailScreen"
+        component={StoryDetailScreen}
+        options={{ headerBackTitleVisible: false, headerShown: true }}
+      />
     </SelectScreensStack.Navigator>
   )
 }

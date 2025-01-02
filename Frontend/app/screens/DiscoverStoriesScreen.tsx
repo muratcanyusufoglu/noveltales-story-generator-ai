@@ -17,9 +17,12 @@ import { DemoTabScreenProps } from "../navigators/DemoNavigator"
 import HomeService from "./HomeScreen/Service/HomeService"
 import FastImage, { ImageStyle } from "react-native-fast-image"
 import { CategoryCard } from "app/components/CategoryComponent"
-import { PaginatedResponse } from "app/store/Story"
 
 const SCREEN_WIDTH = Dimensions.get("window").width
+const PADDING = spacing.md
+const NUMBER_OF_COLUMNS = 2
+const CARD_MARGIN = spacing.sm
+const TOTAL_MARGIN = CARD_MARGIN * (NUMBER_OF_COLUMNS + 1)
 const CARD_WIDTH = (SCREEN_WIDTH - spacing.lg * 3) / 2
 
 // Fallback image if story image is missing
@@ -28,21 +31,41 @@ const FALLBACK_IMAGE =
 
 interface Story {
   id: number
+  userId: number
+  characterIds: number[]
+  characterNames: string[]
+  topicId: number
+  topicName: string
+  timeLapse: string
+  timeLapseTime: string
+  content: string
+  contentText: string
+  locationId: number
+  location: string
+  generatedContent: string
   header: string
   storyImage: string
-  generatedContent: string
-  imageUrl: string
-  contentText: string
+  imageUrl?: string
   isContinues: boolean
-  isEditable: boolean
+  totalPartCount: number
+  createdAt: string
+  updatedAt: string
+  isEditable?: boolean
+}
+
+interface PaginatedStories {
+  stories: Story[]
+  currentPage: number
+  totalPages: number
+  totalItems: number
 }
 
 export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = ({
   route,
   navigation,
 }) => {
-  const [stories, setStories] = useState<PaginatedResponse<Story>>({
-    items: [],
+  const [stories, setStories] = useState<PaginatedStories>({
+    stories: [],
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
@@ -70,12 +93,19 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
 
       if (response) {
         if (page === 1) {
-          setStories(response)
-          setRecommendedStories(response.items.slice(0, 10))
+          setStories({
+            stories: response.stories,
+            currentPage: response.currentPage,
+            totalPages: response.totalPages,
+            totalItems: response.totalItems,
+          })
+          setRecommendedStories(response.stories.slice(0, 10))
         } else {
           setStories((prev) => ({
-            ...response,
-            items: [...prev.items, ...response.items],
+            currentPage: response.currentPage,
+            totalPages: response.totalPages,
+            totalItems: response.totalItems,
+            stories: [...prev.stories, ...response.stories],
           }))
         }
       }
@@ -91,8 +121,10 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
       const response = await homeService.getTopics()
       if (response && Array.isArray(response)) {
         setCategories(response)
-        if (response.length > 0) {
+        // If we have categories and no initial category is set, fetch stories for the first category
+        if (response.length > 0 && !initialCategory && !initialCategoryId) {
           setSelectedCategory(response[0].title)
+          fetchStoriesByCategory(response[0].id, 1)
         }
       }
     } catch (error) {
@@ -107,58 +139,126 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
       const response = await homeService.getStoriesByCategory(categoryId, { page, limit: 10 })
       if (response) {
         if (page === 1) {
-          setStories(response)
+          setStories({
+            stories: response.stories || [],
+            currentPage: response.currentPage,
+            totalPages: response.totalPages,
+            totalItems: response.totalItems,
+          })
         } else {
           setStories((prev) => ({
-            ...response,
-            items: [...prev.items, ...response.items],
+            currentPage: response.currentPage,
+            totalPages: response.totalPages,
+            totalItems: response.totalItems,
+            stories: [...prev.stories, ...(response.stories || [])],
           }))
         }
       }
     } catch (error) {
-      setStories({ items: [], currentPage: 1, totalPages: 1, totalItems: 0 })
+      setStories({ stories: [], currentPage: 1, totalPages: 1, totalItems: 0 })
       console.error("Failed to fetch stories by category:", error)
     } finally {
       setIsLoading(false)
     }
   }
 
-  const loadMore = () => {
+  const loadMore = async () => {
     if (stories.currentPage < stories.totalPages && !isLoading) {
-      if (initialCategoryId) {
-        fetchStoriesByCategory(initialCategoryId, stories.currentPage + 1)
-      } else {
-        fetchStories(stories.currentPage + 1)
+      console.log("Loading more stories for page:", stories.currentPage + 1)
+      setIsLoading(true)
+      try {
+        let response
+        if (selectedCategory && categories.length > 0) {
+          const selectedCategoryId = categories.find((cat) => cat.title === selectedCategory)?.id
+          if (selectedCategoryId) {
+            response = await homeService.getStoriesByCategory(selectedCategoryId, {
+              page: stories.currentPage + 1,
+              limit: 10,
+            })
+          }
+        } else {
+          response = await homeService.getStories({
+            id: 61,
+            page: stories.currentPage + 1,
+            limit: 10,
+          })
+        }
+
+        if (response) {
+          setStories((prev) => ({
+            currentPage: response.currentPage,
+            totalPages: response.totalPages,
+            totalItems: response.totalItems,
+            stories: [...prev.stories, ...response.stories],
+          }))
+        }
+      } catch (error) {
+        console.error("Failed to load more stories:", error)
+      } finally {
+        setIsLoading(false)
       }
     }
   }
 
-  const handleCategorySelect = (category: { id: number; title: string }) => {
+  const handleCategorySelect = async (category: { id: number; title: string }) => {
+    console.log("Selected category:", category)
     setSelectedCategory(category.title)
-    fetchStoriesByCategory(category.id, 1)
+    setIsLoading(true)
+    try {
+      const response = await homeService.getStoriesByCategory(category.id, { page: 1, limit: 10 })
+      console.log("Category stories response:", response)
+      if (response) {
+        setStories({
+          stories: response.stories || [],
+          currentPage: response.currentPage,
+          totalPages: response.totalPages,
+          totalItems: response.totalItems,
+        })
+      } else {
+        setStories({
+          stories: [],
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0,
+        })
+      }
+    } catch (error) {
+      console.error("Failed to fetch stories for category:", error)
+      setStories({
+        stories: [],
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
     if (initialCategory && initialCategoryId) {
       setSelectedCategory(initialCategory)
       fetchStoriesByCategory(initialCategoryId, 1)
-    } else {
-      fetchStories(1)
     }
     fetchCategories()
   }, [initialCategory, initialCategoryId])
 
   const handleStoryPress = (story: Story) => {
-    story.isEditable = false
-    navigation.navigate("StoryDetailScreen", { story })
+    const storyForNavigation = {
+      id: story.id,
+      header: story.header,
+      contentText: story.contentText,
+      generatedContent: story.generatedContent,
+      storyImage: story.storyImage,
+      imageUrl: story.storyImage,
+      isContinues: story.isContinues,
+      isEditable: false,
+    }
+    navigation.navigate("StoryDetailScreen", { story: storyForNavigation })
   }
 
   const StoryCard = ({ story }: { story: Story }) => (
-    <TouchableOpacity
-      style={$storyCard}
-      onPress={() => handleStoryPress(story)}
-      activeOpacity={0.7}
-    >
+    <TouchableOpacity style={$storyCard} onPress={() => handleStoryPress(story)}>
       <FastImage
         source={{ uri: story.storyImage || FALLBACK_IMAGE }}
         style={$storyImage}
@@ -168,7 +268,7 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
         <Text style={$storyTitle} numberOfLines={2}>
           {story.header || "Untitled Story"}
         </Text>
-        <Text style={$storyContentText} numberOfLines={1}>
+        <Text style={$storyContentText} numberOfLines={2}>
           {story.generatedContent || "No content available"}
         </Text>
       </View>
@@ -209,13 +309,12 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
 
         {/* Stories Grid */}
         <FlatList<Story>
-          data={stories.items}
+          data={stories.stories}
           renderItem={({ item }: { item: Story }) => <StoryCard story={item} />}
           keyExtractor={(item: Story) => item.id.toString()}
           numColumns={2}
           contentContainerStyle={$storiesGrid}
           onEndReached={loadMore}
-          onEndReachedThreshold={0.5}
           refreshing={isLoading}
           onRefresh={() => fetchStories(1)}
           ListEmptyComponent={
@@ -226,7 +325,7 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
         />
 
         {/* Recommended Stories Section */}
-        <View style={$recommendedSection}>
+        {/* <View style={$recommendedSection}>
           <Text style={$sectionTitle}>Recommended For You</Text>
           <ScrollView
             horizontal
@@ -237,7 +336,7 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
               <RecommendedStoryCard key={story.id || index} story={story} />
             ))}
           </ScrollView>
-        </View>
+        </View> */}
       </View>
     </SafeAreaView>
   )
@@ -246,7 +345,6 @@ export const DiscoverStoriesScreen: FC<DemoTabScreenProps<"DiscoverScreen">> = (
 // Styles
 const $root: ViewStyle = {
   flex: 1,
-  alignItems: "center",
 }
 
 const $container: ViewStyle = {
@@ -285,32 +383,26 @@ const $storiesContainer: ViewStyle = {
 }
 
 const $storiesGrid: ViewStyle = {
+  paddingHorizontal: spacing.md,
   flexDirection: "row",
   flexWrap: "wrap",
-  justifyContent: "center",
-  alignItems: "center",
-  width: "100%",
-  paddingHorizontal: spacing.sm,
+  justifyContent: "space-between",
+}
+
+const $columnWrapper: ViewStyle = {
+  justifyContent: "flex-start",
 }
 
 const $storyCard: ViewStyle = {
-  width: CARD_WIDTH,
   marginBottom: spacing.md,
-  backgroundColor: colors.palette.neutral100,
-  borderRadius: 12,
-  overflow: "hidden",
-  elevation: 2,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.1,
-  shadowRadius: 4,
+  width: Dimensions.get("window").width / 2.3,
+  marginHorizontal: spacing.xxs,
 }
 
 const $storyImage: ImageStyle = {
-  width: "100%",
-  height: CARD_WIDTH,
-  borderTopLeftRadius: 12,
-  borderTopRightRadius: 12,
+  height: Dimensions.get("window").width / 4,
+
+  borderRadius: 12,
 }
 
 const $storyContent: ViewStyle = {

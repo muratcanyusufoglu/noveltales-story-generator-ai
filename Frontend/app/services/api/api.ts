@@ -16,7 +16,7 @@ import { PaginationParams, PaginatedResponse, Story } from "../../store/Story"
  * Configuring the apisauce instance.
  */
 export const DEFAULT_API_CONFIG: ApiConfig = {
-  url: "http://localhost:3000/api/",
+  url: process.env.EXPO_PUBLIC_API ?? "",
   timeout: 10000,
 }
 

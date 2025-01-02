@@ -65,7 +65,6 @@ class SelectService {
     contentText: string,
     location: string,
     locationId: number,
-    header: string,
     isContinues: boolean,
   ) {
     try {
@@ -81,7 +80,6 @@ class SelectService {
         contentText: contentText,
         location: location,
         locationId: locationId,
-        header: header,
         isContinues: isContinues,
       })
 

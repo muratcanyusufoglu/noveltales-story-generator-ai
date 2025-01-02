@@ -29,7 +29,11 @@ const en = {
     usernamePlaceholder: "Enter your username",
     emailLabel: "Email",
     emailPlaceholder: "Enter your email",
+    passwordLabel: "Password",
+    passwordPlaceholder: "Enter your password",
     logIn: "Log In",
+    noAccount: "Don't have an account? Sign up",
+    enterCredentials: "Please enter your email and password to continue.",
   },
   storyDetailScreen: {
     letStoryContinue: "Let's Story Continue",
@@ -114,13 +118,14 @@ const en = {
   },
   toast: {
     loginSuccess: "Login successful!",
-    loginFailed: "Login failed",
+    loginFailed: "Login failed. Please try again.",
     invalidEmail: "Invalid email format",
     tempEmailNotAllowed: "Temporary email addresses are not allowed",
     userExists: "Email or username already exists",
     emptyFields: "Please fill in all fields",
     registrationSuccess: "Registration successful!",
     registrationFailed: "Registration failed. Please try again.",
+    passwordMismatch: "Passwords do not match",
   },
   auth: {
     validation: {
@@ -136,12 +141,37 @@ const en = {
       error: {
         title: {
           invalidEmail: "Invalid Email",
+          invalidPassword: "Invalid Password",
           registrationFailed: "Registration Failed",
           error: "Error",
         },
         message: {
+          emptyEmail: "Email cannot be empty",
+          invalidEmail: "Please enter a valid email address",
+          emptyPassword: "Password cannot be empty",
+          passwordTooShort: "Password must be at least 6 characters long",
           userExists: "Email or username is already registered",
           registrationFailed: "Registration failed. Please try again.",
+        },
+      },
+    },
+    login: {
+      success: {
+        title: "Success",
+        message: "Login successful!",
+      },
+      error: {
+        title: {
+          invalidEmail: "Invalid Email",
+          invalidPassword: "Invalid Password",
+          userNotFound: "User Not Found",
+          invalidCredentials: "Invalid Credentials",
+          error: "Error",
+        },
+        message: {
+          userNotFound: "No user found with this email",
+          invalidCredentials: "Invalid email or password",
+          loginFailed: "Login failed. Please try again.",
         },
       },
     },
@@ -167,6 +197,20 @@ const en = {
         cancel: "Cancel",
       },
     },
+  },
+  signupScreen: {
+    createAccount: "Create Account",
+    fillDetails: "Please fill in your details to create an account",
+    usernameLabel: "Username",
+    usernamePlaceholder: "Enter your username",
+    emailLabel: "Email",
+    emailPlaceholder: "Enter your email",
+    passwordLabel: "Password",
+    passwordPlaceholder: "Enter your password",
+    confirmPasswordLabel: "Confirm Password",
+    confirmPasswordPlaceholder: "Confirm your password",
+    signUp: "Sign Up",
+    alreadyHaveAccount: "Already have an account? Log in",
   },
 }
 

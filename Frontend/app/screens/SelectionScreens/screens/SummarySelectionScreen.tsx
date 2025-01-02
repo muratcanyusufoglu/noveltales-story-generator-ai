@@ -58,7 +58,6 @@ export const SummarySelectionScreen: FC<DemoTabScreenProps<"SummarySelectionScre
           content,
           locations,
           locationId,
-          "Story ",
           isEnabled,
         )
 

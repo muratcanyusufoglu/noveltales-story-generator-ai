@@ -20,6 +20,7 @@ import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { colors } from "app/theme"
 import { WelcomeScreen } from "app/screens/WelcomeScreen/WelcomeScreen"
 import { SubscriptionSheet } from "app/screens/HomeScreen/Screens/SubscriptionScreen"
+import { SignupScreen } from "app/screens/SignupScreen/SignupScreen"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -41,6 +42,7 @@ export type AppStackParamList = {
   HomePage: undefined
   TimeSelectionScreen: undefined
   WelcomeScreen: undefined
+  SignupScreen: undefined
   // 🔥 Your screens go here
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
@@ -61,7 +63,6 @@ const Stack = createNativeStackNavigator<AppStackParamList>()
 
 const AppStack = () => {
   const { authEmail } = useAuthenticationStore()
-  const { isSheetOpen, closeSheet } = useSubscriptionStore()
 
   return (
     <>
@@ -76,6 +77,7 @@ const AppStack = () => {
         ) : (
           <>
             <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
+            <Stack.Screen name="SignupScreen" component={SignupScreen} />
           </>
         )}
         {/** 🔥 Your screens go here */}

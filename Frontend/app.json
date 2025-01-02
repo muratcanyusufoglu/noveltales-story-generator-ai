@@ -19,8 +19,13 @@
       "backgroundColor": "#191015"
     },
     "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0,
-      "enabled": true
+      "url": "https://u.expo.dev/4c6384aa-3423-4a95-b1cb-e1816ebb426f"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     },
     "jsEngine": "hermes",
     "assetBundlePatterns": [
@@ -40,7 +45,7 @@
       }
     },
     "ios": {
-      "buildNumber": "2",
+      "buildNumber": "3",
       "icon": "./assets/images/novelTalesIcon.png",
       "supportsTablet": true,
       "bundleIdentifier": "com.noveltalesai.storygenerator",
@@ -65,7 +70,7 @@
       "splash": {
         "image": "./assets/images/noveltalesSplash.png",
         "tabletImage": "./assets/images/noveltalesSplash.png",
-        "resizeMode": "contain" ,
+        "resizeMode": "contain",
         "backgroundColor": "#191015"
       },
       "deploymentTarget": "14.0",
@@ -82,6 +87,7 @@
     },
     "plugins": [
       "expo-localization",
+      "expo-updates",
       [
         "expo-build-properties",
         {

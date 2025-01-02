@@ -23,19 +23,26 @@ export const createAuthenticationSlice: StateCreator<RootStore, [], [], Authenti
   authToken: undefined,
   authEmail: "",
   isSubscribed: false,
-  creditBalance: 5,
+  creditBalance: 0,
   username: "",
   setIsSubscribed: (value) => set({ isSubscribed: value }),
   setCreditBalance: (value) => set({ creditBalance: value }),
   setAuthToken: (value) => set({ authToken: value }),
   setAuthEmail: (value) => set({ authEmail: value.replace(/ /g, "") }),
   setUsername: (value) => set({ username: value }),
-  logout: () => set({ authToken: undefined, authEmail: "", isSubscribed: false }),
+  logout: () =>
+    set({
+      authToken: undefined,
+      authEmail: "",
+      isSubscribed: false,
+      creditBalance: 0,
+      username: "",
+    }),
   isSubscribedOrExistCreditBalance: () => {
     const { isSubscribed, creditBalance } = get()
     console.log("isSubscribed :: ", isSubscribed)
     console.log("creditBalance :: ", creditBalance)
-    return isSubscribed || creditBalance + 5 > 0
+    return isSubscribed || creditBalance + 15 > 0
   },
 })
 

@@ -42,11 +42,11 @@ export const CategoryCard: FC<CategoryCardProps> = ({
       style={[
         $categoryCard,
         selectedCategory === item.title && $selectedCategoryCard,
-        { height: showImages ? 120 : 30 },
+        { height: true ? 120 : 30 },
       ]}
       onPress={() => onCategorySelect(item)}
     >
-      {showImages && (
+      {true && (
         <FastImage
           source={{
             uri: item.images[0],
@@ -57,17 +57,20 @@ export const CategoryCard: FC<CategoryCardProps> = ({
           resizeMode={FastImage.resizeMode.cover}
         />
       )}
-      <View style={$categoryContent}>
+      <View style={selectedCategory !== item.title ? $categoryContent : $selectedCategoryContent}>
+        {selectedCategory === item.title && (
+          <Icon icon="check" size={16} color={colors.palette.neutral100} />
+        )}
         <Text
-          style={[$categoryTitle, selectedCategory === item.title && $selectedCategoryTitle]}
+          style={[
+            $categoryTitle,
+            selectedCategory === item.title ? { color: colors.palette.neutral100 } : {},
+          ]}
           numberOfLines={1}
           size="xxs"
         >
           {item.title}
         </Text>
-        {selectedCategory === item.title && (
-          <Icon icon="check" size={16} color={colors.palette.neutral100} />
-        )}
       </View>
     </TouchableOpacity>
   )
@@ -97,7 +100,8 @@ const $categoryCard: ViewStyle = {
   borderRadius: spacing.xs,
   overflow: "hidden",
   backgroundColor: colors.palette.neutral200,
-  height: (props) => (props.showImages ? 120 : 30),
+  height: 120,
+  //height: (props) => (props.showImages ? 120 : 30),
 }
 
 const $selectedCategoryCard: ViewStyle = {
@@ -122,10 +126,14 @@ const $categoryContent: ViewStyle = {
 
 const $categoryTitle: TextStyle = {
   flex: 1,
-  marginRight: spacing.xs,
-  color: colors.text,
+  marginLeft: spacing.xs,
 }
 
-const $selectedCategoryTitle: TextStyle = {
-  color: colors.palette.neutral100,
+const $selectedCategoryContent: TextStyle = {
+  width: "100%",
+  alignItems: "center",
+  justifyContent: "center",
+  height: 30,
+  backgroundColor: colors.appPrimary,
+  flexDirection: "row",
 }

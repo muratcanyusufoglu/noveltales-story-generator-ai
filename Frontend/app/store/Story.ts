@@ -18,6 +18,7 @@ export interface Story {
   totalPartCount: number
   createdAt: string
   updatedAt: string
+  isEditable?: boolean
 }
 
 export interface PaginationParams {

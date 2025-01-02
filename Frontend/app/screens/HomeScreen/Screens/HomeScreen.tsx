@@ -16,14 +16,29 @@ import { Story } from "app/store/Story"
 
 interface StoryListItem {
   id: number
-  storyImage: string
-  header: string
+  userId: number
+  characterIds: number[]
+  characterNames: string[]
+  topicId: number
+  topicName: string
+  timeLapse: string
+  timeLapseTime: string
+  content: string
+  contentText: string
+  locationId: number
+  location: string
   generatedContent: string
-  isEditable: boolean
+  header: string
+  storyImage: string
+  isContinues: boolean
+  totalPartCount: number
+  createdAt: string
+  updatedAt: string
+  isEditable?: boolean
 }
 
 interface PaginatedStories {
-  items: StoryListItem[]
+  stories: StoryListItem[]
   currentPage: number
   totalPages: number
   totalItems: number
@@ -73,8 +88,11 @@ const MyStoriesList: FC<{
   onLoadMore: () => void
 }> = ({ stories, navigation, onLoadMore }) => {
   const handlePress = (item: StoryListItem) => {
-    item.isEditable = true
-    navigation.navigate("StoryDetailScreen", { story: item })
+    const storyForNavigation = {
+      ...item,
+      isEditable: true,
+    }
+    navigation.navigate("StoryDetailScreen", { story: storyForNavigation })
   }
 
   const renderStory = ({ item }: { item: StoryListItem }) => (
@@ -98,14 +116,27 @@ const MyStoriesList: FC<{
   )
 
   const handleEndReached = () => {
-    if (stories.totalPages > stories.currentPage) {
+    if (stories.currentPage < stories.totalPages) {
+      console.log(
+        "MyStoriesList - Loading more stories. Current page:",
+        stories.currentPage,
+        "Total pages:",
+        stories.totalPages,
+      )
       onLoadMore()
+    } else {
+      console.log(
+        "MyStoriesList - No more pages to load. Current page:",
+        stories.currentPage,
+        "Total pages:",
+        stories.totalPages,
+      )
     }
   }
 
   return (
     <FlatList
-      data={stories.items}
+      data={stories.stories}
       keyExtractor={(item) => item.id.toString()}
       renderItem={renderStory}
       contentContainerStyle={[list]}
@@ -162,7 +193,7 @@ export const HomeScreen: FC<HomeScreenProps> = (_props) => {
   const homeService = new HomeService()
   const { authToken } = useAuthenticationStore()
   const [stories, setStories] = useState<PaginatedStories>({
-    items: [],
+    stories: [],
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
@@ -172,29 +203,41 @@ export const HomeScreen: FC<HomeScreenProps> = (_props) => {
   const isFocused = useIsFocused()
 
   const fetchStories = async (page = 1) => {
-    if (loading || !authToken) return
+    if (loading || !authToken) {
+      console.log("Skipping fetch - loading:", loading, "authToken:", authToken)
+      return
+    }
     setLoading(true)
     try {
-      console.log("Fetching stories with authToken:", authToken)
+      console.log("Fetching stories with authToken:", authToken, "page:", page)
       const fetchedStories = await homeService.getStories({
         id: authToken,
         page,
         limit: 10,
       })
-      console.log("Fetched stories:", fetchedStories)
+      console.log("Fetched stories response:", fetchedStories)
 
-      if (fetchedStories && fetchedStories.items) {
+      if (fetchedStories && Array.isArray(fetchedStories.stories)) {
+        console.log("Setting stories - count:", fetchedStories.stories.length)
         if (page === 1) {
-          setStories(fetchedStories)
+          setStories({
+            stories: fetchedStories.stories,
+            currentPage: fetchedStories.currentPage,
+            totalPages: fetchedStories.totalPages,
+            totalItems: fetchedStories.totalItems,
+          })
         } else {
           setStories((prev) => ({
-            ...fetchedStories,
-            items: [...(prev.items || []), ...(fetchedStories.items || [])],
+            currentPage: fetchedStories.currentPage,
+            totalPages: fetchedStories.totalPages,
+            totalItems: fetchedStories.totalItems,
+            stories: [...prev.stories, ...fetchedStories.stories],
           }))
         }
       } else {
+        console.log("No stories found or invalid response")
         setStories({
-          items: [],
+          stories: [],
           currentPage: 1,
           totalPages: 1,
           totalItems: 0,
@@ -203,7 +246,7 @@ export const HomeScreen: FC<HomeScreenProps> = (_props) => {
     } catch (error) {
       console.error("Error fetching stories:", error)
       setStories({
-        items: [],
+        stories: [],
         currentPage: 1,
         totalPages: 1,
         totalItems: 0,
@@ -215,14 +258,20 @@ export const HomeScreen: FC<HomeScreenProps> = (_props) => {
 
   const loadMore = () => {
     if (stories.currentPage < stories.totalPages && !loading) {
+      console.log("Loading more stories - page:", stories.currentPage + 1)
       fetchStories(stories.currentPage + 1)
     }
   }
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!authToken) return
+      if (!authToken) {
+        console.log("No authToken available, skipping fetch")
+        return
+      }
+      console.log("Fetching initial data")
       const fetchedTopics = await homeService.getTopics()
+      console.log("Fetched topics:", fetchedTopics)
       if (fetchedTopics && Array.isArray(fetchedTopics)) {
         setTopics(fetchedTopics)
       } else {
@@ -261,11 +310,11 @@ export const HomeScreen: FC<HomeScreenProps> = (_props) => {
         />
       </View>
       <Spacer size={spacing.md} />
-      {loading && stories.items.length === 0 ? (
+      {loading && stories.totalItems === 0 ? (
         <View style={centerContainer}>
           <Text style={messageText}>Loading stories...</Text>
         </View>
-      ) : stories.items.length === 0 ? (
+      ) : stories.stories.length === 0 ? (
         <View style={centerContainer}>
           <Text style={messageText}>No stories found</Text>
         </View>

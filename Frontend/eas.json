@@ -1,39 +1,33 @@
 {
   "cli": {
-    "version": ">= 3.15.1"
+    "version": ">= 5.9.1"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "extends": "production",
       "distribution": "internal",
-      "android": {
-        "gradleCommand": ":app:assembleDebug"
+      "env": {
+        "APP_ENV": "development"
+      }
+    },
+    "staging": {
+      "distribution": "internal",
+      "ios": {
+        "resourceClass": "m-medium"
       },
-      "ios": {
-        "buildConfiguration": "Debug",
-        "simulator": true
+      "env": {
+        "APP_ENV": "staging"
       }
     },
-    "development:device": {
-      "extends": "development",
-      "distribution": "internal",
+    "production": {
+      "distribution": "store",
       "ios": {
-        "buildConfiguration": "Debug",
-        "simulator": false
+        "resourceClass": "m-medium"
+      },
+      "env": {
+        "APP_ENV": "production"
       }
-    },
-    "preview": {
-      "extends": "production",
-      "distribution": "internal",
-      "ios": { "simulator": true },
-      "android": { "buildType": "apk" }
-    },
-    "preview:device": {
-      "extends": "preview",
-      "ios": { "simulator": false }
-    },
-    "production": {}
+    }
   },
   "submit": {
     "production": {}

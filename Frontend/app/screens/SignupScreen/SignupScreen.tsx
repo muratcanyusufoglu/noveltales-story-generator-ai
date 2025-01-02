@@ -3,23 +3,27 @@ import { View, TextStyle, ViewStyle, SafeAreaView, TouchableOpacity } from "reac
 import { Button, Text, TextField } from "../../components"
 import { colors, spacing } from "../../theme"
 import { useAuthenticationStore } from "app/store"
-import { DemoTabScreenProps } from "app/navigators/DemoNavigator"
+import { AppStackScreenProps } from "app/navigators"
 import { translate } from "../../i18n"
-import UserService from "./LoginService"
+import UserService from "../WelcomeScreen/LoginService"
 import { toast } from "@baronha/ting"
 
-interface WelcomeScreenProps extends DemoTabScreenProps<"WelcomeScreen"> {}
+interface SignupScreenProps extends AppStackScreenProps<"SignupScreen"> {}
 
-export const WelcomeScreen: FC<WelcomeScreenProps> = (_props) => {
+export const SignupScreen: FC<SignupScreenProps> = (_props) => {
   const [mail, setMail] = useState("")
+  const [uName, setUName] = useState("")
   const [password, setPassword] = useState("")
 
   const { setAuthToken, setAuthEmail, setUsername } = useAuthenticationStore()
 
-  async function login() {
+  async function signup() {
     try {
       const userService = new UserService()
-      const user = await userService.loginUser(mail, password)
+      const role = "user"
+      const premium = false
+
+      const user = await userService.registerUser(uName, mail, password, role, premium)
 
       setAuthToken(Number(Date.now()))
       setUsername(user.username)
@@ -27,10 +31,10 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = (_props) => {
 
       _props.navigation.navigate("Demo" as never)
     } catch (error) {
-      console.error("Login failed", error)
+      console.error("Signup failed", error)
       toast({
         title: translate("alerts.error"),
-        message: translate("toast.loginFailed"),
+        message: translate("toast.registrationFailed"),
         preset: "error",
         duration: 3000,
       })
@@ -38,7 +42,7 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = (_props) => {
   }
 
   const handleSubmit = () => {
-    if (!mail.trim() || !password.trim()) {
+    if (!uName.trim() || !mail.trim() || !password.trim()) {
       toast({
         title: translate("alerts.error"),
         message: translate("toast.emptyFields"),
@@ -47,30 +51,38 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = (_props) => {
       })
       return
     }
-    login()
+    signup()
   }
 
-  const navigateToSignup = () => {
-    _props.navigation.navigate("SignupScreen" as never)
+  const navigateToLogin = () => {
+    _props.navigation.navigate("WelcomeScreen" as never)
   }
 
   return (
     <SafeAreaView style={$container}>
-      <Text style={$welcomeText}>{translate("welcomeScreen.welcomeBack")}</Text>
-      <Text style={$instructionText}>{translate("welcomeScreen.enterCredentials")}</Text>
+      <Text style={$welcomeText}>{translate("signupScreen.createAccount")}</Text>
+      <Text style={$instructionText}>{translate("signupScreen.fillDetails")}</Text>
 
       <View style={$inputContainer}>
         <TextField
-          label={translate("welcomeScreen.emailLabel")}
-          placeholder={translate("welcomeScreen.emailPlaceholder")}
+          label={translate("signupScreen.usernameLabel")}
+          placeholder={translate("signupScreen.usernamePlaceholder")}
+          value={uName}
+          onChangeText={setUName}
+          containerStyle={$textField}
+          placeholderTextColor={colors.palette.neutral500}
+        />
+        <TextField
+          label={translate("signupScreen.emailLabel")}
+          placeholder={translate("signupScreen.emailPlaceholder")}
           value={mail}
           onChangeText={setMail}
           containerStyle={$textField}
           placeholderTextColor={colors.palette.neutral500}
         />
         <TextField
-          label={translate("welcomeScreen.passwordLabel")}
-          placeholder={translate("welcomeScreen.passwordPlaceholder")}
+          label={translate("signupScreen.passwordLabel")}
+          placeholder={translate("signupScreen.passwordPlaceholder")}
           value={password}
           onChangeText={setPassword}
           containerStyle={$textField}
@@ -80,14 +92,14 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = (_props) => {
       </View>
 
       <Button
-        text={translate("welcomeScreen.logIn")}
-        style={$loginButton}
-        textStyle={$loginButtonText}
+        text={translate("signupScreen.signUp")}
+        style={$signupButton}
+        textStyle={$signupButtonText}
         onPress={handleSubmit}
       />
 
-      <TouchableOpacity style={$signupLink} onPress={navigateToSignup}>
-        <Text style={$signupLinkText}>{translate("welcomeScreen.noAccount")}</Text>
+      <TouchableOpacity style={$loginLink} onPress={navigateToLogin}>
+        <Text style={$loginLinkText}>{translate("signupScreen.alreadyHaveAccount")}</Text>
       </TouchableOpacity>
     </SafeAreaView>
   )
@@ -127,7 +139,7 @@ const $textField: ViewStyle = {
   borderRadius: spacing.md,
 }
 
-const $loginButton: ViewStyle = {
+const $signupButton: ViewStyle = {
   backgroundColor: colors.appPrimary,
   borderRadius: spacing.md,
   paddingVertical: spacing.md,
@@ -135,18 +147,18 @@ const $loginButton: ViewStyle = {
   marginHorizontal: spacing.md,
 }
 
-const $loginButtonText: TextStyle = {
+const $signupButtonText: TextStyle = {
   color: colors.palette.neutral100,
   fontSize: 16,
   fontWeight: "bold",
 }
 
-const $signupLink: ViewStyle = {
+const $loginLink: ViewStyle = {
   marginTop: spacing.xl,
   alignItems: "center",
 }
 
-const $signupLinkText: TextStyle = {
+const $loginLinkText: TextStyle = {
   color: colors.appPrimary,
   fontSize: 16,
   textDecorationLine: "underline",

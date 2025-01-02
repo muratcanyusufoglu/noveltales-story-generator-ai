@@ -1,5 +1,5 @@
 import { Api } from "../../../services/api"
-import { PaginationParams } from "../../../store/Story"
+import { PaginationParams, Story } from "../../../store/Story"
 
 export default class HomeService {
   api: Api
@@ -15,13 +15,24 @@ export default class HomeService {
       console.log("HomeService: API response:", response)
 
       if (response.kind === "ok" && response.data) {
+        const { stories = [], currentPage = page, totalPages = 1, totalItems = 0 } = response.data
+        console.log("HomeService: Processed response:", {
+          stories,
+          currentPage,
+          totalPages,
+          totalItems,
+        })
         return {
-          items: response.data.items || [],
-          currentPage: response.data.currentPage || page,
-          totalPages: response.data.totalPages || 1,
-          totalItems: response.data.totalItems || 0,
+          items: stories.map((story: Story) => ({
+            ...story,
+            isEditable: true,
+          })),
+          currentPage,
+          totalPages,
+          totalItems,
         }
       }
+      console.log("HomeService: Invalid response or error")
       return {
         items: [],
         currentPage: 1,
@@ -29,7 +40,7 @@ export default class HomeService {
         totalItems: 0,
       }
     } catch (error) {
-      console.error("Error fetching stories:", error)
+      console.error("HomeService: Error fetching stories:", error)
       return {
         items: [],
         currentPage: 1,
@@ -46,13 +57,24 @@ export default class HomeService {
       console.log("HomeService: Category API response:", response)
 
       if (response.kind === "ok" && response.data) {
+        const { stories = [], currentPage = page, totalPages = 1, totalItems = 0 } = response.data
+        console.log("HomeService: Processed category response:", {
+          stories,
+          currentPage,
+          totalPages,
+          totalItems,
+        })
         return {
-          items: response.data.items || [],
-          currentPage: response.data.currentPage || page,
-          totalPages: response.data.totalPages || 1,
-          totalItems: response.data.totalItems || 0,
+          items: stories.map((story: Story) => ({
+            ...story,
+            isEditable: false,
+          })),
+          currentPage,
+          totalPages,
+          totalItems,
         }
       }
+      console.log("HomeService: Invalid category response or error")
       return {
         items: [],
         currentPage: 1,
@@ -60,7 +82,7 @@ export default class HomeService {
         totalItems: 0,
       }
     } catch (error) {
-      console.error("Error fetching category stories:", error)
+      console.error("HomeService: Error fetching category stories:", error)
       return {
         items: [],
         currentPage: 1,
@@ -72,13 +94,16 @@ export default class HomeService {
 
   async getTopics() {
     try {
+      console.log("HomeService: Fetching topics")
       const response = await this.api.apisauce.get("/topics")
+      console.log("HomeService: Topics response:", response)
       if (response.ok && response.data) {
         return response.data || []
       }
+      console.log("HomeService: Invalid topics response or error")
       return []
     } catch (error) {
-      console.error("Error fetching topics:", error)
+      console.error("HomeService: Error fetching topics:", error)
       return []
     }
   }
