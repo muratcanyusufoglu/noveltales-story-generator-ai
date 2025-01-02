@@ -4,29 +4,44 @@ const router = express.Router();
 const { Story, Character, Topic, Timelapse, Content } = require('../models');
 const OpenAI = require('openai');
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({
+  baseURL: 'https://api.deepseek.com',
+  apiKey: process.env.DEEPSEEK_API_KEY
+});
 
 // Create a new story
 router.post('/create', async (req, res) => {
   try {
-    const { userId, characterIds, characterNames, topicId, topicName, timeLapse, timeLapseTime, content,contentText, locationId, location, header, isContinues } = req.body;
+    const { userId, characterIds, characterNames, topicId, topicName, timeLapse, timeLapseTime, content, contentText, locationId, location, isContinues } = req.body;
 
     const topic = await Topic.findByPk(topicId);
     if (!topic) {
       return res.status(404).json({ error: 'Topic not found' });
     }
     
-    const topicImages = topic.images;
-    let storyImage = ""
+    // Generate header first
+    const headerResponse = await openai.chat.completions.create({
+      model: 'deepseek-chat',
+      messages: [
+        { role: 'system', content: 'You are a creative assistant that generates catchy and interesting story titles.' },
+        {
+          role: 'user',
+          content: `Create a short, engaging title for a story with the following elements:
+Characters: ${characterNames.join(', ')}
+Topic: ${topicName}
+Time Period: ${timeLapseTime}
+Story Premise: ${contentText}
 
-    const imagesLength = topicImages.length
-    const randomImageIndex = Math.floor(Math.random() * imagesLength)
-    storyImage = topicImages[randomImageIndex]
-    
-    //Call OpenAI API to generate story content,
+The title should be brief (maximum 6-8 words) and captivating. Return only the title, nothing else.`,
+        },
+      ],
+    });
 
+    const generatedHeader = headerResponse.choices[0].message.content;
+
+    // Rest of the story generation
     const gptResponse = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'deepseek-chat',
       messages: [
         { role: 'system', content: 'You are a creative assistant that generates interesting stories based on user inputs. Do not use asterisks (*) or any special symbols for formatting.' },
         {
@@ -37,35 +52,38 @@ Characters: ${characterNames.join(', ')}
 Topic: ${topicName}
 Time Lapse: ${timeLapseTime}
 Content: ${contentText}
-Header: ${header}
+Header: ${generatedHeader}
 Is Story Continues: ${isContinues}. 
 Important: Do not use asterisks or any special symbols in the story.`,
         },
       ],
     });
 
-    const generatedContent = await gptResponse.choices[0].message.content;
+    const topicImages = topic.images;
+    let storyImage = ""
 
-    //Delay for 5 seconds
-    // await new Promise(resolve => setTimeout(resolve, 10000));
-    // const generatedContent = "Generated Content";
+    const imagesLength = topicImages.length
+    const randomImageIndex = Math.floor(Math.random() * imagesLength)
+    storyImage = topicImages[randomImageIndex]
+    
+    const generatedContent = gptResponse.choices[0].message.content;
 
     const story = await Story.create({
-      userId : userId,
-      characterIds : characterIds,
-      characterNames : characterNames,
-      topicId: topicId,
-      topicName: topicName,
-      timeLapse:  timeLapse,
-      timeLapseTime: timeLapseTime,
-      content: content,
-      contentText: contentText,
-      locationId: locationId,
-      location: location,
-      generatedContent: generatedContent,
-      header: header,
-      storyImage: storyImage,
-      isContinues: isContinues,
+      userId,
+      characterIds,
+      characterNames,
+      topicId,
+      topicName,
+      timeLapse,
+      timeLapseTime,
+      content,
+      contentText,
+      locationId,
+      location,
+      generatedContent,
+      header: generatedHeader,
+      storyImage,
+      isContinues,
       totalPartCount: 1,
     });
 
@@ -220,27 +238,22 @@ router.put('/:id', async (req, res) => {
 
 router.put('/:id/continue', async (req, res) => {
   try {
-
-    const {contentText} = req.body;
-
-    const totalPartCount = await Story.findByPk(req.params.id).then(story => {return story.totalPartCount});
+    const { contentText } = req.body;
+    const totalPartCount = await Story.findByPk(req.params.id).then(story => story.totalPartCount);
 
     const gptResponse = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'deepseek-chat',
       messages: [
         { role: 'system', content: 'You are a creative assistant that generates interesting stories. Keep the same style and tone of the story. Do not use asterisks (*) or any special symbols for formatting.' },
         {
           role: 'user',
-          content: `Chapter ${totalPartCount + 1}
-
-Continue the story with the following content: ${contentText}`,
+          content: `Chapter ${totalPartCount + 1}\n\nContinue the story with the following content: ${contentText}`,
         },
       ],
     });
 
-    const generatedContent = await gptResponse.choices[0].message.content;
+    const generatedContent = gptResponse.choices[0].message.content;
 
-    console.log('generatedContent', generatedContent)
     const [updated] = await Story.update({
       generatedContent: contentText + '\n\n' + generatedContent,
       totalPartCount: totalPartCount + 1,
@@ -254,8 +267,7 @@ Continue the story with the following content: ${contentText}`,
     } else {
       res.status(404).json({ error: 'Story not found' });
     }
-  }
-  catch(error){
+  } catch (error) {
     console.error('Failed to continue story', error);
     res.status(500).json({ error: 'Failed to continue story' });
   }
